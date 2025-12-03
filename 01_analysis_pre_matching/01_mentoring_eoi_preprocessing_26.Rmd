@@ -1,0 +1,217 @@
+---
+title: "Researcher Mentoring Program for Early Career Researchers (2026)"
+# subtitle: "Data Script for Preprocessing the EOIs"
+author: "Jen Beaudry"
+date: "December 2025"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include = FALSE}
+
+# just a reminder that there is no output from this script. It just cleans the data.
+  # I have built it as a Rmd so we can run it as a child document.
+  # even though the code is similar in the college breakdown, I need to run it separately
+  # because I include info about the duplicates in the report, so I have to split that step from the cleaning.
+
+knitr::opts_chunk$set(echo = FALSE, include = FALSE)
+
+options(knitr.duplicate.label = "allow") # use this when you use the child files
+
+```
+
+```{r library}
+
+library(here)
+library(tidyverse)
+
+source(here("..", "functions", "read_qualtrics.R"))
+source(here("..", "functions", "meta_rename.R"))
+
+```
+
+```{r load data}
+
+# mentor data
+df_tor <- here::here("00_data", "raw_data", "eoi_mentor.csv") %>%
+  read_qualtrics(legacy = FALSE) %>%
+  select(-c("start_date":"user_language", "cv_file_id":"cv_file_type")) %>% 
+  filter(!is.na(surname))  %>% # remove anyone that didn't provide their last name
+  filter(surname != "fgh") %>% # remove a test case 
+  mutate(first_name = str_to_title(first_name), 
+         preferred_name = str_to_title(preferred_name), 
+         surname = str_to_title(surname)) %>% 
+  mutate(id = 1:n()) %>% 
+  relocate(id, .before = first_name) 
+
+# mentee data
+df_tee <- here::here("00_data", "raw_data", "eoi_mentee.csv") %>%
+  read_qualtrics(legacy = FALSE) %>%
+  select(-c("start_date":"user_language", "cv_file_id":"cv_file_type")) %>% 
+  filter(!is.na(surname)) %>% # remove anyone that didn't provide their last name
+  mutate(first_name = str_to_title(first_name), 
+         preferred_name = str_to_title(preferred_name), 
+         surname = str_to_title(surname)) %>% 
+  mutate(id = 1:n()) %>%  
+  relocate(id, .before = first_name) 
+
+
+# load metadata for mentor
+meta_tor <- read_csv(here::here("00_data", "raw_data", "metadata_eoi_mentor.csv"), lazy = FALSE) %>%
+  filter(old_variable != "NA", old_variable != "exclude") # remove the instruction variables
+
+# load metadata for mentee
+meta_tee <- read_csv(here::here("00_data", "raw_data", "metadata_eoi_mentee.csv"), lazy = FALSE) %>%
+  filter(old_variable != "NA", old_variable != "exclude") # remove the instruction variables
+
+```
+
+
+```{r recode variables}
+
+# recode variable labels according to metadata for mentor data
+
+df_tor <- meta_rename(df = df_tor, metadata = meta_tor, old = old_variable, new = new_variable)
+
+# recode variable labels according to metadata for mentee data
+
+df_tee <- meta_rename(df = df_tee, metadata = meta_tee, old = old_variable, new = new_variable)  
+
+```
+
+
+```{r fixing names, eval = FALSE}
+
+# capitalise their names [but if needed first omit folks with surnames that contain lower case letters]
+  # I was able to do that when loading the data this year, so don't need to do it for 2026
+
+# first mentors [create two tibbles, capitalise, and then join them together again
+  # if no one has lower case letters, then no need to create two tibbles. 
+
+df_tor1a <- df_tor %>% 
+  filter(!str_detect(surname, "O'Dea")) %>% 
+  mutate(first_name = str_to_title(first_name)) %>% 
+  mutate(surname = str_to_title(surname)) 
+
+df_tor1b <- df_tor %>%
+  filter(str_detect(surname, ("O'Dea"))) 
+
+df_tor <- full_join(df_tor1a, df_tor1b)
+
+# df_tor <- df_tor %>%
+#   mutate(first_name = str_to_title(first_name)) %>%
+#   mutate(surname = str_to_title(surname))
+
+# now work on mentees' names
+
+df_tee1a <- df_tee %>%
+  filter(!str_detect(surname, ("KELLY")))
+
+df_tee1b <- df_tee %>%
+  filter(str_detect(surname, ("KELLY"))) %>% 
+    mutate(first_name = str_to_title(first_name)) %>%
+  mutate(surname = str_to_title(surname))
+
+df_tee <- full_join(df_tee1a, df_tee1b)
+
+# now remove these dataframes because we don't need them
+rm(df_tee1a, df_tee1b, df_tor1a, df_tor1b)
+
+```
+
+```{r fix errors in the data}
+
+# this will develop as I look through the data. 
+  # several mentors did not include email addresses, so I will manually add that into the data so their names aren't here.
+
+# typos in their email addresses
+
+# df_tee <- df_tee %>% 
+#   mutate(email = str_replace_all(email, "@flinders.edu$", "@flinders.edu.au")) %>% 
+#   mutate(email = str_replace_all(email, "@flinders.ed.au", "@flinders.edu.au"))
+
+# non-numeric responses re: FTE
+
+# df_tee [df_tee == "60%"] <- "0.6"
+# df_tee [df_tee == "0.8FTE"] <- "0.8"
+
+# one mentee [mentee_50] selected the wrong college; fix that in the data
+# 
+# df_tee1a <- df_tee %>%
+#   filter(id != "50")
+# 
+# df_tee1b <- df_tee %>%
+#   filter(id == "50")
+# 
+# df_tee1b [df_tee1b == "Humanities, Arts and Social Sciences"] <- "Education, Psychology and Social Work"
+# 
+# df_tee <- full_join(df_tee1a, df_tee1b)
+# 
+# # now remove these dataframes because we don't need them
+# rm(df_tee1a, df_tee1b)
+```
+
+```{r create new variables}
+
+
+df_tor <- df_tor %>% 
+  unite ("name", preferred_name:surname, sep = " ", remove = FALSE)
+
+df_tee <- df_tee %>% 
+  unite ("name", preferred_name:surname, sep = " ", remove = FALSE)
+
+df_tor <- df_tor %>% 
+  unite ("name and college", c(name,college), sep = " - ", remove = FALSE)
+
+df_tee <- df_tee %>% 
+  unite ("name and college", c(name,college), sep = " - ", remove = FALSE)
+
+# create a role variable for the two tibbles
+
+df_tor$role <- "mentor"
+df_tee$role <- "mentee"
+
+# identify the mentor and mentee IDs 
+df_tor$id <- paste("mentor", df_tor$id, sep = "_")
+df_tee$id <- paste("mentee", df_tee$id, sep = "_")
+
+```
+
+```{r change variable types}
+
+# change the type of variables from numbers to characters
+
+df_tee <- df_tee %>% 
+  mutate_if(is.numeric, as.character)
+
+df_tor <- df_tor %>% 
+  mutate_if(is.numeric, as.character)
+
+```
+
+```{r create combined tibble}
+
+#combine the mentor and mentee tibbles into one
+
+df <- full_join(df_tor, df_tee)
+
+
+```
+
+```{r write the preprocessed data}
+
+# when done preprocessing, write the data to new files
+# row.names gets rid of the first column from the dataframe.
+
+write.csv(df_tor, here::here("00_data", "processed_data", "eoi_mentor_preprocessed.csv"), row.names = FALSE)
+
+write.csv(df_tee, here::here("00_data", "processed_data", "eoi_mentee_preprocessed.csv"), row.names = FALSE)
+
+write.csv(df, here::here("00_data", "processed_data", "eoi_combined_preprocessed.csv"), row.names = FALSE)
+
+# these files contain the ineligible folks and duplicates and incomplete applications
+
+```
+
+

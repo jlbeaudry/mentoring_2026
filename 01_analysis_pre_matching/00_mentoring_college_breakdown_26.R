@@ -55,6 +55,10 @@ df_tor <- here::here("00_data", "raw_data", "eoi_mentor.csv") %>%
   read_qualtrics(legacy = FALSE) %>%
   select(-c("start_date":"user_language", "cv_file_id":"cv_file_type")) %>% 
   filter(!is.na(surname))  %>% # remove anyone that didn't provide their last name
+  filter(surname != "fgh") %>% # remove a test case 
+  mutate(first_name = str_to_title(first_name), 
+         preferred_name = str_to_title(preferred_name), 
+         surname = str_to_title(surname)) %>% 
   mutate(id = 1:n()) %>% 
   relocate(id, .before = first_name) 
 
@@ -64,6 +68,9 @@ df_tee <- here::here("00_data", "raw_data", "eoi_mentee.csv") %>%
   read_qualtrics(legacy = FALSE) %>%
   select(-c("start_date":"user_language", "cv_file_id":"cv_file_type")) %>% 
   filter(!is.na(surname)) %>% # remove anyone that didn't provide their last name
+  mutate(first_name = str_to_title(first_name), 
+         preferred_name = str_to_title(preferred_name), 
+         surname = str_to_title(surname)) %>% 
   mutate(id = 1:n()) %>%  
   relocate(id, .before = first_name) 
 
@@ -139,10 +146,11 @@ which(duplicated(df_tor$surname))
 
 # if no duplicate, add a duplicate variable so it matches the mentee data
 
-# five possible duplicate flagged; XXX real duplicates 
+# six possible duplicate flagged; 5 real duplicates 
 # delete mentor_27; mentor_23 was the complete application
 # delete mentor_1 & mentor_29; mentor_26 was the complete application
 # delete mentor_31; mentor_36 was the complete application
+# delete mentor_37; mentor_28 was the complete application
 
 
 # after reviewing the raw data, indicate duplicates in the df
@@ -153,10 +161,12 @@ df_tor <- df_tor %>%
   mutate (duplicate = ifelse ((id %in% "mentor_27") |
                                 (id %in% "mentor_1")|
                                 (id %in% "mentor_29")|
-                              (id %in% "mentor_31"),
+                                (id %in% "mentor_31")|
+                                (id %in% "mentor_37"),
                               "yes",
                               "no"
   )) 
+
 
 # create object indicating how many mentors submitted duplicate EOIs(needed for report)
 
@@ -175,25 +185,19 @@ which(duplicated(df_tor$first_name))
 # four people share the same first names (two pairs)
 
 
-# MENTEES [BREADCRUMB: COME BACK TO THIS FOR 2026]
+# MENTEES 
 
 which(duplicated(df_tee$surname))
 
-# five possible duplicates flagged; five real duplicates 
-# delete mentee_23; mentee_24 was the complete application
-# delete mentee_11; mentee_41 was the complete application
-# delete mentee_19; mentee_46 was the complete application
-# delete mentee_27; mentee_52 was the complete application
-# delete mentee_33; mentee_53 was the complete application
+# two possible duplicates flagged; 1 real duplicate
+# delete mentee_39; mentee_36 was the complete application
+
 
 # after reviewing the raw data, indicate duplicates in the df
 
 df_tee <- df_tee %>%
-  mutate (duplicate = ifelse ((id %in% "mentee_11") | 
-                                (id %in% "mentee_19") | 
-                                (id %in% "mentee_23") |
-                                (id %in% "mentee_27") | 
-                                (id %in% "mentee_33"),
+  mutate (duplicate = ifelse ((id %in% "mentee_39")|
+                                id %in% "mentee_38",
                               "yes",
                               "no"
   )) 
@@ -252,7 +256,7 @@ write.xlsx(
 
 write.xlsx(
   as.data.frame(df_by_college),
-  here::here("00_data", "processed_data", "applicants_by_college_with_email_25.xlsx"),
+  here::here("00_data", "processed_data", "applicants_by_college_with_email_26.xlsx"),
   row.names = FALSE,
   sheetName = "Sheet1",
   col.names = TRUE,
