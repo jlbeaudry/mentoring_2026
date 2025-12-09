@@ -321,8 +321,6 @@ employ_no_n_tor <- df_tor %>%
     filter(employment_eligibility == "Not eligible") %>% 
     nrow()
 
-
-
 ## CONTRACT END DATE ##
 
 # Manually review their end date....these are mentors with fixed-term contracts
@@ -334,14 +332,20 @@ df_tor_end <- df_tor %>%
 # if necessary, contact those who did not provide contract end date details [not necessary in 2026?]
 
 
-# add a contract eligibility variable to df
-
+# add a contract eligibility variable to df & add notes about contract issues
 
 df_tor <- df_tor %>%
-  mutate(contract_eligibility = as.character("Eligible")) %>%
+  mutate(contract_end_notes = case_when(id %in% "mentor_13" ~ "Converted to continuing", #email confirmation
+                                        id %in% "mentor_38" ~ "Need update",
+                                        id %in% "mentor_34" ~ "Need update",
+         TRUE ~ as.character(""))) %>% 
+      relocate(contract_end_notes, .after = contract_end_year)
+
+df_tor <- df_tor %>%
+  mutate(contract_eligibility = case_when(str_detect(contract_end_notes, "Need update") ~ "Information needed", 
+         TRUE ~ as.character("Eligible"))) %>% 
   mutate(contract_eligibility = as.factor(contract_eligibility))
 
-# create object for report of how many are not eligible due to contract
 
 contract_no_n_tor <- df_tor %>% 
     filter(!contract_eligibility == "Eligible") %>% #takes into account the question about eligibility
@@ -354,6 +358,7 @@ df_tor <- df_tor %>%
   mutate(eligibility = case_when(employment_eligibility == "Not eligible" ~ "Not eligible", 
                                 level_eligibility == "Not eligible" ~ "Not eligible", 
                                 contract_eligibility == "Not eligible" ~ "Not eligible", 
+                                contract_eligibility == "Information needed" ~ "Information needed",
                                 #grepl("Question", contract_eligibility) ~ "Information needed", {not needed}
                                   TRUE ~ as.character("Eligible"))) %>% 
   mutate(eligibility = as.factor(eligibility))
