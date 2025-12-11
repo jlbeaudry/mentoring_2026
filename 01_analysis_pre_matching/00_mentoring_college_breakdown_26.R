@@ -55,12 +55,12 @@ df_tor <- here::here("00_data", "raw_data", "eoi_mentor.csv") %>%
   read_qualtrics(legacy = FALSE) %>%
   select(-c("start_date":"user_language", "cv_file_id":"cv_file_type")) %>% 
   filter(!is.na(surname))  %>% # remove anyone that didn't provide their last name
-  filter(surname != "fgh") %>% # remove a test case 
   mutate(first_name = str_to_title(first_name), 
          preferred_name = str_to_title(preferred_name), 
          surname = str_to_title(surname)) %>% 
   mutate(id = 1:n()) %>% 
-  relocate(id, .before = first_name) 
+  relocate(id, .before = first_name) %>% 
+  filter(surname != "fgh") # remove a test case, do it now because I didn't see it until I worked with the data & id numbers
 
 
 # mentee data
@@ -223,6 +223,7 @@ which(duplicated(df_tee$first_name))
 #combine the mentor and mentee tibbles into one
 
 df <- full_join(df_tor, df_tee)
+
 
 
 #### SAVE SIMPLE DATA FOR MENTORING EVALUATION & COLLEGES ####

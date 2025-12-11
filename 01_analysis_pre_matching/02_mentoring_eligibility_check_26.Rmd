@@ -336,7 +336,7 @@ df_tor_end <- df_tor %>%
 
 df_tor <- df_tor %>%
   mutate(contract_end_notes = case_when(id %in% "mentor_13" ~ "Converted to continuing", #email confirmation
-                                        id %in% "mentor_38" ~ "Need update",
+                                        id %in% "mentor_38" ~ "Extended for two years", #email confirmation
                                         id %in% "mentor_34" ~ "Need update",
          TRUE ~ as.character(""))) %>% 
       relocate(contract_end_notes, .after = contract_end_year)
@@ -403,7 +403,7 @@ df_compare <- inner_join(df_prior, df_tee_name, by = "Mentee")
   # participate this year
 
 df_tee <- df_tee %>%
-  mutate(previous_mentee_eligibility = case_when(id %in% "mentee_42" ~ "Not eligible", # participated in 2022
+  mutate(previous_mentee_eligibility = case_when(id %in% "mentee_7" ~ "Not eligible", # participated in 2020
                                            TRUE ~ as.character("Eligible"))) %>% 
   mutate(previous_mentee_eligibility = as.factor(previous_mentee_eligibility))
 
@@ -416,23 +416,21 @@ rm(df_compare, df_tee_name, df_prior)
 ## EMPLOYMENT TYPE ##
 
 # look at their responses to other employment types AND for those in other academic roles AND
-  # for those who said that their position was a PhD student
+  # for those who said that their position was a PhD student OR for those who gave no information
 
 employ_a <- df_tee %>%
-  filter(employment_type %in% "Other (please specify)") 
+  filter(is.na(employment_type) | employment_type %in% "Other (please specify)" | NA) 
 
 employ_b <- df_tee %>%
-  filter(academic_role %in% "Other (please specify)") 
+  filter(is.na(academic_role) | academic_role %in% "Other (please specify)") 
 
 employ_c <- df_tee %>% 
-  filter(str_detect(position, "student"))
+  filter(is.na(position) | str_detect(position, "student"))
 
 # mark them as ineligible as required 
 df_tee <- df_tee %>%
-  mutate(employment_eligibility = case_when(id %in% "mentee_5" ~ "Not eligible", # PhD student & Research Assistant
-                                            id %in% "mentee_44" ~ "Not eligible", # PhD student
-                                            id %in% "mentee_18" ~ "Not eligible", # PhD student
-                                            id %in% "mentee_55" ~ "Not eligible", # PhD student
+  mutate(employment_eligibility = case_when(id %in% "mentee_17" ~ "Information needed", # no info re: role; asked to complete
+                                            id %in% "mentee_35" ~ "Not eligible", # Research Assistant
                                             TRUE ~ as.character("Eligible"))) %>% 
   mutate(employment_eligibility = as.factor(employment_eligibility))
 
@@ -479,27 +477,19 @@ level <- df_tee %>%
 df_tee$level <- as.factor(df_tee$level)
 df_tee %>% 
   filter(!level %in% c("Level A", "Level B", "Level C"))
-# no one other than those with other levels because 
-  # technically Level Ds can participate according to the guidelines!
 
 # this list also includes others who were revealed to have casual appts based 
-  # on other info in their EOI (e.g., mentee_43)
+  # on other info in their EOI
 
-df_tee <- df_tee %>%
-  mutate(level_recode = case_when(id %in% "mentee_5" ~ "Research Assistant",
-                                  id %in% "mentee_18" ~ "PhD student", 
-                                  id %in% "mentee_44" ~ "PhD student",
-                                  id %in% "mentee_55" ~ "PhD student",
-                                 TRUE ~ as.character((level)))) %>% 
-  relocate(level_recode, .after = level_other)
+# df_tee <- df_tee %>%
+#   mutate(level_recode = case_when(id %in% "mentee_35" ~ "Research Assistant",
+#                                  TRUE ~ as.character((level)))) %>% 
+#   relocate(level_recode, .after = level_other)
 
 # now mark eligibility according to level
 
 df_tee <- df_tee %>%
-  mutate(level_eligibility = case_when(id %in% "mentee_5" ~ "Not eligible", 
-                                  id %in% "mentee_18" ~ "Not eligible",
-                                  id %in% "mentee_44" ~ "Not eligible",
-                                  id %in% "mentee_55" ~ "Not eligible",
+  mutate(level_eligibility = case_when(id %in% "mentee_35" ~ "Not eligible",
                                  TRUE ~ as.character("Eligible"))) %>% 
   mutate(level_eligibility = as.factor(level_eligibility))
 
@@ -526,9 +516,10 @@ df_phd <- df_tee %>%
   # [breadcrumb: resolve awaiting information eligibility issues]
   
 df_tee <- df_tee %>%
-  mutate(conferral_eligibility = case_when(id %in% "mentee_9" ~ "Not eligible", # does not yet hold a phd
-                                  id %in% "mentee_20" ~ "Not eligible", # email re: career interruptions
-                                 TRUE ~ as.character("Eligible"))) %>% 
+  mutate(conferral_eligibility = case_when(id %in% "mentee_23" ~ "Information needed", # need confirmation
+                                  id %in% "mentee_25" ~ "Information needed", # need confirmation
+                                  id %in% "mentee_35" ~ "No PhD", 
+                                  TRUE ~ as.character("Eligible"))) %>% 
   mutate(conferral_eligibility = as.factor(conferral_eligibility))
 
 
@@ -565,20 +556,24 @@ df_tee <- df_tee %>%
 
 df_tee_end <- df_tee %>% 
   filter(str_detect(employment_length, "Fixed-term")) %>% 
-  select(c(id, name, college, employment_length, contract_end_date, level_recode, employment_eligibility, level_eligibility, conferral_eligibility))
+  select(c(id, name, college, employment_length, contract_end_month, contract_end_year, level, employment_eligibility, level_eligibility, conferral_eligibility))
 
 # I did this manually after screening by contract end date & level
 # then I reviewed their EOIs and contacted those who did not provide contract end date details
 # this also captures those above who were students or casuals, but I'm not including those here
 
 df_tee <- df_tee %>%
-  mutate(contract_eligibility = case_when(id %in% "mentee_5" ~ "Not eligible", # email
-                                 id %in% "mentee_9" ~ "Not eligible", # email
-                                 id %in% "mentee_15" ~ "Eligible", # contract extended [via email]
-                                 id %in% "mentee_31" ~ "Eligible", # contract until end of year [via email]
-                                 id %in% "mentee_49" ~ "Eligible", # contract extended [via email]
-                                 id %in% "mentee_52" ~ "Eligible", # contract extended [via email]
-                                 id %in% "mentee_54" ~ "Not eligible", # incomplete application too
+  mutate(contract_eligibility = case_when(id %in% "mentee_28" ~ "Information needed", # emailed
+                                 id %in% "mentee_34" ~ "Information needed", # emailed
+                                 id %in% "mentee_2" ~ "Information needed", #emailed 
+                                 id %in% "mentee_5" ~  "Information needed", #emailed 
+                                 id %in% "mentee_6" ~ "Information needed", #emailed 
+                                 id %in% "mentee_24" ~ "Information needed", #emailed 
+                                 id %in% "mentee_27" ~ "Information needed", #emailed 
+                                 id %in% "mentee_30" ~ "Information needed", #emailed 
+                                 id %in% "mentee_40" ~ "Information needed", #emailed 
+                                 id %in% "mentee_32" ~ "Not eligible", # [via email]
+                                 id %in% "mentee_41" ~ "Not eligible", # [via email]
                                   TRUE ~ as.character("Eligible"))) %>% 
   mutate(contract_eligibility = as.factor(contract_eligibility))
 
@@ -689,10 +684,25 @@ df <- full_join(df_tor, df_tee)
 # RESHAPE THE DATA NOW, SO WE CAN INCLUDE THE NUMBERS OF FOLKS WHO WERE 
   # REMOVED BECAUSE THEY DIDN'T INCLUDE INFO ABOUT AREAS
 
+
+# first combine the contract end date values
+
+df <- df %>%
+  mutate(
+    contract_end_date = if_else(
+      !is.na(contract_end_month) & contract_end_month != "" &
+      !is.na(contract_end_year)  & contract_end_year  != "",
+      paste(contract_end_month, contract_end_year),
+      NA_character_
+    )
+  ) %>% 
+  relocate (contract_end_date, .after = contract_end_year)
+
+
 # make the dataset with the ranks long
 
 long <- df %>% 
-  select (-c(first_name:title, work_phone:contract_end_date, why_mentor:mentoring_approach)) %>% 
+  select (-c(first_name, preferred_name:title, work_phone:contract_end_date, why_mentor:mentoring_approach)) %>% 
   pivot_longer(
     cols = planning:other_2,
     names_to = "areas", 
@@ -702,16 +712,14 @@ long <- df %>%
 # recode the ranks to yes or NA for interest 
   # [except some people entered other information, so I need to screen those out, as below]
 
+values <- unique(long$rank)
+
 # long2 <- long %>% 
 #   mutate(interest = ifelse(rank %in% NA, NA, "yes")) 
 
 long2 <- long %>%
-  mutate(interest = case_when(rank == "no" ~ "no", 
-                                 rank == "No" ~ "no",
-                                 rank == "unsure" ~ "no",
-                                 rank == "Maybe" ~ "no",
-                                 rank == "Depending on discipline" ~ "no",
-                                 rank == "Some experience" ~ "no",
+  mutate(interest = case_when(rank == "NA" ~ "no", 
+                                 rank == "NO" ~ "no",
                                  is.na(rank) ~ "no",
                                  TRUE ~ as.character("yes"))) %>% 
   mutate(interest = as.factor(interest))
@@ -722,7 +730,7 @@ long2 <- long %>%
 
 # select relevant data
 areas <- long2 %>% 
-  select (c(id,`name and college`, name, college, level_recode, areas, rank, interest, role)) %>% 
+  select (c(id,`name and college`, name, college, level, areas, rank, interest, role)) %>% 
   filter(interest == "yes")
 
 # make this wide again and combine all of the interests into one cell. 
@@ -735,7 +743,7 @@ areas_wide <- areas %>%
   # process]
 
 areas_wide <- areas_wide %>% 
-  unite ("areas", planning:other_1, sep = ", ", remove = FALSE, na.rm = TRUE)
+  unite ("areas", planning:other_2, sep = ", ", remove = FALSE, na.rm = TRUE)
 
 mentors_areas_wide <- areas_wide %>% 
       filter(role == "mentor")

@@ -133,8 +133,8 @@ rm(df_tee1a, df_tee1b, df_tor1a, df_tor1b)
 
 # non-numeric responses re: FTE
 
-# df_tee [df_tee == "60%"] <- "0.6"
-# df_tee [df_tee == "0.8FTE"] <- "0.8"
+df_tee [df_tee == "0.4 but may increase to 0.5 for 2026"] <- "0.4"
+df_tee [df_tee == "0.8 FTE"] <- "0.8"
 
 # one mentee [mentee_50] selected the wrong college; fix that in the data
 # 
@@ -199,16 +199,16 @@ df <- full_join(df_tor, df_tee)
 
 ```
 
-```{r write the preprocessed data}
+```{r write the preprocessed and cleaned data}
 
 # when done preprocessing, write the data to new files
 # row.names gets rid of the first column from the dataframe.
 
-write.csv(df_tor, here::here("00_data", "processed_data", "eoi_mentor_preprocessed.csv"), row.names = FALSE)
+write.csv(df_tor, here::here("00_data", "processed_data", "eoi_mentor_preprocessed_and_cleaned.csv"), row.names = FALSE)
 
-write.csv(df_tee, here::here("00_data", "processed_data", "eoi_mentee_preprocessed.csv"), row.names = FALSE)
+write.csv(df_tee, here::here("00_data", "processed_data", "eoi_mentee_preprocessed_and_cleaned.csv"), row.names = FALSE)
 
-write.csv(df, here::here("00_data", "processed_data", "eoi_combined_preprocessed.csv"), row.names = FALSE)
+write.csv(df, here::here("00_data", "processed_data", "eoi_combined_preprocessed_and_cleaned.csv"), row.names = FALSE)
 
 # these files contain the ineligible folks and duplicates and incomplete applications
 
