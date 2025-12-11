@@ -1,0 +1,465 @@
+---
+title: "Researcher Mentoring Program for Early-Career Researchers (2026)" 
+subtitle: "Application Details & Information for Matching"
+# author: "Jen Beaudry"
+date: "December 2025"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+header-includes:
+  - \usepackage{titling}
+    \setlength{\droptitle}{-2cm} # removes some of the white space above title
+  - \pretitle{\begin{center}
+    \includegraphics[width=1.5in, height=1.5in]{flinders-university-horizontal-master.png}\LARGE\\} # adds logo
+  - \posttitle{\end{center}}
+  - \usepackage{fancyhdr}
+  - \fancypagestyle{plain}{\pagestyle{fancy}} # sets the footer on page 1
+  - \pagestyle{fancy} # sets the footer on page 2 and beyond
+  - \fancyhf{} # clears existing header & footer
+  - \renewcommand{\headrulewidth}{0pt} # removes the line from the header
+  - \renewcommand{\arraystretch}{1.4} #adds whitespace to all tables
+  - \fancyfoot[L]{Jen Beaudry} # my name in footer
+  - \fancyfoot[R]{\thepage} # page number in foooter
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      include = FALSE, 
+                      fig.path = here::here("figs"))
+
+options(knitr.duplicate.label = "allow") # use this when you use the child files
+```
+
+
+```{r run eligibility check, child = (here::here("01_analysis_pre_matching", "02_mentoring_eligibility_check_26.Rmd"))}
+
+```
+
+
+```{r functions, include=FALSE}
+
+styler_pdf <- function(dat) {
+  dat %>%
+     kable_styling(full_width = F, 
+                latex_options = c("striped", "HOLD_position"))
+}
+
+```
+
+```{r library, include=FALSE}
+
+library(here)
+library(tidyverse)
+library(kableExtra)
+
+```
+
+```{r load data, include=FALSE}
+
+# these files include eligible folks, with eligibility status indicated in the file
+# row.names gets rid of the first column from the dataframe.
+# [breadcrumb -- do I need all of these datafiles for this?]
+
+# mentor data
+
+df_tor <- read_csv(here::here("00_data", "processed_data", "eoi_mentor_eligible.csv"), 
+                   lazy = FALSE)
+
+mentor_areas_wide <- read_csv(here::here("00_data", "processed_data", "eoi_mentor_areas_wide.csv"), 
+                   lazy = FALSE)
+
+# mentee data
+
+df_tee <- read_csv(here::here("00_data", "processed_data", "eoi_mentee_eligible.csv"), 
+                   lazy = FALSE)
+
+
+mentee_areas_wide <- read_csv(here::here("00_data", "processed_data", "eoi_mentee_areas_wide.csv"), 
+                   lazy = FALSE)
+
+# mentees and mentors combined
+
+df <- read_csv(here::here("00_data", "processed_data", "eoi_combined_eligible.csv"), 
+                   lazy = FALSE)
+
+# load metadata for mentor
+
+meta_tor <- read_csv(here::here("00_data", "raw_data", "metadata_eoi_mentor.csv"), lazy = FALSE) %>%
+  filter(old_variable != "NA", old_variable != "exclude") # remove the instruction variables
+
+# load metadata for mentee
+
+meta_tee <- read_csv(here::here("00_data", "raw_data", "metadata_eoi_mentee.csv"), lazy = FALSE) %>%
+  filter(old_variable != "NA", old_variable != "exclude") # remove the instruction variables
+
+```
+
+\newpage
+
+```{r area descriptions table}
+
+## mentees 
+
+meta_areas_tee <- meta_tee %>%
+  filter(scale == "areas") %>%
+  select (c(new_variable, item_text_short))
+
+meta_areas_tee %>%
+  knitr::kable (format = "latex", booktabs = T, linesep = "",
+  col.names = c("Area", "Brief description"),
+  caption = "Description of Areas for Development",
+  align = 'll'
+  ) %>%
+  column_spec(2, width = "4in") %>%
+  styler_pdf()
+
+# redundant to include areas from mentors
+
+# meta_areas_tor <- meta_tor %>% 
+#   filter(scale == "areas") %>% 
+#   select (c(new_variable, item_text_short))
+# 
+# meta_areas_tor %>% 
+#   knitr::kable (booktabs = T, linesep = "\\addlinespace",
+#   col.names = c("Area", "Brief description"),
+#   caption = "Description of Areas for Development", 
+#   align = 'll'
+#   ) %>%
+#   column_spec(2, width = "4in") %>% 
+#   styler_pdf()
+
+
+```
+
+\newpage
+
+```{r areas for mentors table}
+
+total_tor <- nrow(mentor_areas_wide)
+
+mentor_areas_wide %>% 
+  select(c(name, college, level_recode, areas)) %>% 
+  arrange(name) %>% 
+knitr::kable (format = "latex", booktabs = T, linesep = "",
+              col.names = c("Mentor", "College", "Level", "Areas to Mentor"), 
+              caption = 
+                sprintf("Areas of Interest by Mentor (n = %d)",
+                                total_tor), 
+              align = 'lccl', 
+              longtable = T)  %>% #break the table over multiple pages
+  column_spec(1, width = "1in") %>% 
+  column_spec(2, width = "1.5in") %>% 
+  column_spec(3, width = "1in") %>% 
+  column_spec(4, width = "3in") %>% 
+  kable_styling(full_width = F, 
+                latex_options = c("repeat_header", "hold_position", "striped")) 
+
+```
+
+\newpage 
+
+```{r areas for mentees table}
+
+total_tee <- nrow(mentee_areas_wide)
+
+mentee_areas_wide %>% 
+  select(c(name, college, level_recode, areas)) %>% 
+  arrange(name) %>% 
+knitr::kable (format = "latex", booktabs = T, linesep = "",
+              col.names = c("Mentee", "College", "Level", "Areas for Growth"), 
+              caption = 
+                sprintf("Areas of Interest by Mentee (n = %d)",
+                                total_tee), 
+              align = 'lccl', 
+              longtable = T)  %>% #break the table over multiple pages
+  column_spec(1, width = "1in") %>% 
+  column_spec(2, width = "1.5in") %>% 
+  column_spec(3, width = "1in") %>% 
+  column_spec(4, width = "3in") %>% 
+  kable_styling(full_width = F, 
+                latex_options = c("repeat_header", "hold_position", "striped")) 
+
+```
+
+\newpage
+
+```{r names by area for mentors table}
+
+# make the data long again....
+
+names_long <- df %>% 
+  select (-c(`first_name`:title, work_phone:contract_end_date, why_mentor:mentoring_approach)) %>% 
+  pivot_longer(
+    cols = planning:other_2,
+    names_to = "areas", 
+    values_to = "rank"  
+               )
+
+# recode the ranks to yes or NA for interest
+
+names_long2 <- names_long %>% 
+  mutate(interest = ifelse(rank %in% NA, NA, "yes")) 
+
+# select relevant data for all
+names <- names_long2 %>% 
+  select (c(id,`name and college`, name, college, level_recode, areas, rank, interest, role)) %>% 
+  filter(interest == "yes")
+
+# make this wide again and combine all of the names into one cell. # do only for mentors
+names_wide_tor <- names %>% 
+  filter(role == "mentor") %>% 
+  select (-c(`name and college`, rank)) %>% 
+  pivot_wider(id_cols = "areas", names_from = "id", values_from = name)
+
+# combine the areas into one column
+names_wide_tor2 <- names_wide_tor %>% 
+  unite ("names", starts_with("mentor_"), sep = ", ", remove = FALSE, na.rm = TRUE) %>% 
+  arrange(areas)
+
+
+names_wide_tor2 %>% 
+  select(c(areas, names)) %>% 
+knitr::kable (format = "latex", booktabs = T, linesep = "",
+              col.names = c("Areas", "Interested Mentors"), 
+              caption = 
+                sprintf("Mentors by Areas of Interest (n = %d)",
+                        total_tor),
+              align = 'll', 
+              longtable = T)  %>% #break the table over multiple pages
+  column_spec(1, width = "1.5in") %>% 
+  column_spec(2, width = "4.5in") %>% 
+  kable_styling(full_width = F, 
+                latex_options = c("repeat_header", "hold_position", "striped")) 
+
+```
+
+\newpage
+
+```{r names by area for mentees table}
+
+# use the `names by area for mentors` long data and filter for mentees
+
+# make this wide again and combine all of the names into one cell. # do only for mentees
+names_wide_tee <- names %>% 
+  filter(role == "mentee") %>% 
+  select (-c(`name and college`, rank)) %>% 
+  pivot_wider(id_cols = "areas", names_from = "id", values_from = name)
+
+
+# combine the areas into one column
+names_wide_tee2 <- names_wide_tee %>% 
+  unite ("names", starts_with("mentee_"), sep = ", ", remove = FALSE, na.rm = TRUE) %>% 
+    arrange(areas)
+
+
+names_wide_tee2 %>% 
+  select(c(areas, names)) %>% 
+knitr::kable (format = "latex", booktabs = T, linesep = "",
+              col.names = c("Areas", "Mentees"), 
+              caption = 
+                sprintf("Mentees by Areas for Growth (n = %d)", 
+                        total_tee),
+              align = 'll', 
+              longtable = T)  %>% #break the table over multiple pages
+  column_spec(1, width = "1.5in") %>% 
+  column_spec(2, width = "4.5in") %>% 
+  kable_styling(full_width = F, 
+                latex_options = c("repeat_header", "hold_position", "striped")) 
+
+
+```
+
+
+```{r output names for colleges, eval = FALSE}
+
+# use this to send the list of names to the colleges
+
+# BGL
+
+bgl_tee <- df_tee %>% filter(str_detect(college, "Business")) %>% select(name)
+bgl_tor <- df_tor %>% filter(str_detect(college, "Business")) %>% select(name)
+
+# EPSW
+
+epsw_tee <- df_tee %>% filter(str_detect(college, "Education")) %>% select(name)
+epsw_tor <- df_tor %>% filter(str_detect(college, "Education")) %>% select(name)
+
+# HASS
+
+hass_tee <- df_tee %>% filter(str_detect(college, "Humanities")) %>% select(name)
+hass_tor <- df_tor %>% filter(str_detect(college, "Humanities")) %>% select(name)
+
+# mph
+
+mph_tee <- df_tee %>% filter(str_detect(college, "Medicine")) %>% select(name)
+mph_tor <- df_tor %>% filter(str_detect(college, "Medicine")) %>% select(name)
+
+# NHS
+
+nhs_tee <- df_tee %>% filter(str_detect(college, "Nursing")) %>% select(name)
+nhs_tor <- df_tor %>% filter(str_detect(college, "Nursing")) %>% select(name)
+
+# SE
+
+se_tee <- df_tee %>% filter(str_detect(college, "Engineering")) %>% select(name)
+se_tor <- df_tor %>% filter(str_detect(college, "Engineering")) %>% select(name)
+
+
+```
+
+
+```{r number_of_mentees_per_area, eval=TRUE}
+
+meta_areas_tee <- meta_tee %>% 
+  filter (scale == "areas") %>% 
+  rename(areas = new_variable)
+
+# of those applied and were eligible, this is what they expressed interest in
+
+count_tee <- names %>% 
+    filter(role == "mentee") %>% 
+  group_by(areas) %>% 
+  summarise(n = n())
+
+
+count_with_des <- right_join(meta_areas_tee, count_tee, by = "areas") %>% 
+  select(item_text_short, n) %>% 
+  arrange(-n)
+
+```
+
+\newpage
+We explored how many mentees indicated that they wanted to be 
+mentored in various areas of need (see Table \ref{tab:number_of_mentees_per_area_table}). '`r count_with_des[1,1]`' was the most common area of interest 
+whereas '`r count_with_des[21,1]`' was a more niche area of need. 
+
+
+```{r number_of_mentees_per_area_table, eval=TRUE}
+
+count_with_des %>% 
+  knitr::kable (format = "latex", booktabs = T, linesep = "",
+  col.names = c("Area for mentoring", "Number of mentees"),
+  caption = 
+    sprintf("Number of eligible mentees (n = %d) who wanted to be mentored in different areas", 
+              total_tee),
+  align = 'lc'
+  ) %>%
+  column_spec(1, width = "4in") %>% 
+  styler_pdf()
+
+
+```
+
+\newpage
+
+```{r number_of_mentors_per_area, eval=TRUE, include=TRUE}
+
+meta_areas_tor <- meta_tor %>% 
+  filter (scale == "areas") %>% 
+  rename(areas = new_variable)
+
+# of the those who applied and were eligible, these are the areas they could provide mentoring in
+
+count_tor <- names %>% 
+    filter(role == "mentor") %>% 
+  group_by(areas) %>% 
+  filter(!(areas %in% "other_1")) %>% 
+  filter(!(areas %in% "other_2")) %>% 
+  summarise(n = n())
+
+
+count_with_des <- right_join(meta_areas_tor, count_tor, by = "areas") %>% 
+  select(item_text_short, n) %>% 
+  arrange(-n)
+
+```
+
+We also explored the number of mentors who could provide mentoring in different
+areas (see Table \ref{tab:number_of_mentors_per_area_table}). 
+'`r count_with_des[1,1]`' was the most common area of 
+potential mentoring support whereas '`r count_with_des[21,1]`' was a more niche 
+area of support. 
+
+```{r number_of_mentors_per_area_table, eval=TRUE, include=TRUE}
+
+count_with_des %>% 
+  knitr::kable (format = "latex", booktabs = T, linesep = "",
+  col.names = c("Area for mentoring", "Number of mentors"),
+  caption = 
+    sprintf("Number of eligible mentors (n = %d) who could provide mentoring in different areas", 
+              total_tor),
+  align = 'lc'
+  ) %>%
+  column_spec(1, width = "4in") %>% 
+  styler_pdf()
+
+
+```
+
+
+
+```{r code graveyard, eval = FALSE}
+
+# rearrange the columns!
+
+names <- names %>%
+  relocate (`voted ranks`, .after = `Potential Names`) %>%
+  relocate (`mean`, .after = last_col())
+
+
+kable(names, align = c('l', 'c', 'c', 'c', 'l'), 
+      col.names = c("Potential Names", "Voted Ranks", "Sum", "Num of Votes", "Mean")) %>% 
+        column_spec (column = 4, width = "1.5cm")
+
+
+bgl_tor_details <- df_tor %>% 
+  filter (college == "Business, Government and Law") %>% 
+  select(c(name, level_recode))
+
+bgl_tor_details %>% 
+knitr::kable (booktabs = T, linesep = "",
+              col.names = c("Name", "Level"), 
+              caption = "Mentors in Business, Government and Law",
+              align = 'lcc') %>% 
+     styler_pdf() 
+
+
+epsw_tor_details <- df_tor %>% 
+  filter (college == "Education, Psychology and Social Work") %>% 
+  select(c(name, level_recode))
+
+epsw_tor_details %>% 
+knitr::kable (booktabs = T, linesep = "",
+              col.names = c("Name", "Level"), 
+              caption = "Education, Psychology and Social Work",
+              align = 'lcc') %>% 
+     styler_pdf() 
+
+df_tor %>% 
+  select(c(college, name, level_recode)) %>% 
+    group_by(college) %>% 
+  mutate(perc = round(100*(n / sum(n)),2)) %>% 
+  arrange(college) %>% 
+  ungroup
+
+
+
+# pack_rows seemingly does not work with long data. I need to figure out a different way of doing this...
+# 
+# knitr::kable (
+#   areas_tor[, c(2,3)], # select only the areas interest and ranks column [you need at least two columns!]
+#   booktabs = T,
+#   linesep = "",
+#   col.names = c("Names", "Ranks of Interests (if applicable)"),
+#   caption = "Areas of interest by mentors",
+#   longtable = T #break the table over multiple pages
+#   ) %>%
+#   pack_rows (index = table(areas_tor$`name and college`)) %>%
+#   kable_styling(full_width = F, 
+#                 latex_options = c("repeat_header", "hold_position", "striped")) 
+# # use different styling to repeat the header
+
+```
+
+If you have any questions, please contact Dr Jen Beaudry, Manager, Researcher Training, Development and Communication in Research Development and Support. 

@@ -7,11 +7,9 @@
 # This script cleans the data and gives us a quick report of how many people
 # applied from each College. 
 
-# This info is the same as the 00_.Rmd file, but I don't know which will be needed
-# next year to run the script. Will need to play with it. 
-
 # Ideally, I want to build this in to be run in the 02 Rmd file, but I don't have
-# time in 2025. Review this at the end of the year. 
+# time in 2026. Review this at the end of the year. I think I have figured out
+# how to bring this data into 02.Rmd (2026 attempt).
 
 # I think that we should be able to pull from this script so the numbers are in 
 # the reports and we don't have the same chunk in two (or three??) scripts 
@@ -60,7 +58,7 @@ df_tor <- here::here("00_data", "raw_data", "eoi_mentor.csv") %>%
          surname = str_to_title(surname)) %>% 
   mutate(id = 1:n()) %>% 
   relocate(id, .before = first_name) %>% 
-  filter(surname != "fgh") # remove a test case, do it now because I didn't see it until I worked with the data & id numbers
+  filter(surname != "Fgh") # remove a test case, do it now because I didn't see it until I worked with the data & id numbers
 
 
 # mentee data
@@ -101,6 +99,11 @@ df_tor <- df_tor %>%
 df_tee <- df_tee %>% 
   unite ("name", preferred_name:surname, sep = " ", remove = FALSE)
 
+df_tor <- df_tor %>% 
+  unite ("name and college", c(name,college), sep = " - ", remove = FALSE)
+
+df_tee <- df_tee %>% 
+  unite ("name and college", c(name,college), sep = " - ", remove = FALSE)
 
 # create a role variable for the two tibbles
 
@@ -168,16 +171,9 @@ df_tor <- df_tor %>%
   )) 
 
 
-# create object indicating how many mentors submitted duplicate EOIs(needed for report)
 
-dup_tor <- df_tor %>% 
-  filter(duplicate == "yes") %>% 
-  nrow()
 
 # remove duplicate from working df
-
-df_tor <- df_tor %>% 
-  filter(duplicate == "no")
 
 # double check by looking at first name duplicates before moving forward
 which(duplicated(df_tor$first_name))
@@ -202,32 +198,31 @@ df_tee <- df_tee %>%
                               "no"
   )) 
 
-# create object indicating how many mentees submitted duplicate EOIs(needed for report)
 
-dup_tee <- df_tee %>% 
-  filter(duplicate == "yes") %>% 
-  nrow()
-
-# remove duplicate from working df
-
-df_tee <- df_tee %>% 
-  filter(duplicate == "no")
 
 # double check by looking at first name duplicates before moving forward. No shared names. 
 which(duplicated(df_tee$first_name))
 
 
-#### CREATE COMBINED TIBBLE ####
+#### CREATE COMBINED TIBBLES & WRITE NEW FILES ####
 
 
-#combine the mentor and mentee tibbles into one
 
-df <- full_join(df_tor, df_tee)
+# when done preprocessing, write the data to new files
+# row.names gets rid of the first column from the dataframe.
 
+write.csv(df_tor, here::here("00_data", "processed_data", "eoi_mentor_preprocessed.csv"), row.names = FALSE)
+
+write.csv(df_tee, here::here("00_data", "processed_data", "eoi_mentee_preprocessed.csv"), row.names = FALSE)
 
 
 #### SAVE SIMPLE DATA FOR MENTORING EVALUATION & COLLEGES ####
 
+# remove the duplicates & combine the mentor and mentee tibbles into one
+
+df <- full_join(df_tor, df_tee) %>% 
+  filter(duplicate == "no")
+  
 
 # I need to check with the Colleges before I go ahead with the matching process.
 # row.names gets rid of the first column from the dataframe.

@@ -10,7 +10,7 @@ header-includes:
   - \usepackage{titling}
     \setlength{\droptitle}{-2cm} # removes some of the white space above title
   - \pretitle{\begin{center}
-    \includegraphics[width=1.5in, height=1.5in]{flinders-university-horizontal-master.png}\LARGE\\} # adds logo
+    \includegraphics[width=1.5in, height=0.5in]{flinders-university-horizontal-master.png}\LARGE\\} # adds logo
   - \posttitle{\end{center}}
   - \usepackage{fancyhdr}
   - \fancypagestyle{plain}{\pagestyle{fancy}} # sets the footer on page 1
@@ -37,7 +37,7 @@ library(readxl)
 
 ```
 
-```{r run preprocessing, child=(here::here("01_analysis_pre_matching", "01_mentoring_eoi_preprocessing_25.Rmd")), include=FALSE}
+```{r run preprocessing, child=(here::here("01_analysis_pre_matching", "01_mentoring_eoi_preprocessing_26.Rmd")), include=FALSE}
 
 
 ```
@@ -46,21 +46,15 @@ library(readxl)
 
 # mentor data
 
-df_tor <- read_csv(here::here("00_data", "processed_data", "eoi_mentor_preprocessed.csv"), lazy = FALSE)
+df_tor <- read_csv(here::here("00_data", "processed_data", "eoi_mentor_preprocessed_and_cleaned.csv"), lazy = FALSE)
 
 # mentee data
 
-df_tee <- read_csv(here::here("00_data", "processed_data", "eoi_mentee_preprocessed.csv"), lazy = FALSE)
+df_tee <- read_csv(here::here("00_data", "processed_data", "eoi_mentee_preprocessed_and_cleaned.csv"), lazy = FALSE)
 
-# load metadata for mentor
+# need to add metadata here because the datasets have already been recoded
 
-meta_tor <- read_csv(here::here("00_data", "raw_data", "metadata_eoi_mentor.csv"), lazy = FALSE) %>%
-  filter(old_variable != "NA", old_variable != "exclude") # remove the instruction variables
 
-# load metadata for mentee
-
-meta_tee <- read_csv(here::here("00_data", "raw_data", "metadata_eoi_mentee.csv"), lazy = FALSE) %>%
-  filter(old_variable != "NA", old_variable != "exclude") # remove the instruction variables
 
 ```
 
@@ -84,16 +78,14 @@ df_tee$college <- as.factor(df_tee$college)
 df_tor$id <- as.factor(df_tor$id)
 df_tee$id <- as.factor(df_tee$id)
 
-
 ```
 
 
 ```{r check for duplicates, include = FALSE}
 
-#### CHECK FOR DUPLICATES ####
+#### REPORT DATA RE DUPLICATES ####
 
-# [note: the reason this is here rather than preprocessing is so I can use the 
-# data for reporting; if this chunk is updated, also update it in 00_ file]
+# [note: this is done in the 00_.R file. We just need info for the report.
 
 # get our starting numbers
 
@@ -102,41 +94,6 @@ original_n_tor <- nrow(df_tor)
 
 # we then need to create values for 'dup_tee' & 'dup_tor' that we can use in the
 # report, if there are any duplicates. Don't need if there are no duplicates.
-
-# MENTORS
-
-# check for duplicates in the data
-# integer(0) means there are no duplicates
-# any other number reflects a duplicate. Two or more numbers indicates two or
-# more duplicates. 
-
-which(duplicated(df_tor$surname))
-
-# if no duplicate, add a duplicate variable so it matches the mentee data
-
-# six possible duplicate flagged; 5 real duplicates 
-# delete mentor_27; mentor_23 was the complete application
-# delete mentor_1 & mentor_29; mentor_26 was the complete application
-# delete mentor_31; mentor_36 was the complete application
-# delete mentor_37; mentor_28 was the complete application
-
-
-# after reviewing the raw data, indicate duplicates in the df
-# if we have more than one, add them in like this:  ((id %in% "mentee_25") | (id %in% "mentee_23")
-
-
-df_tor <- df_tor %>%
-  mutate (duplicate = ifelse ((id %in% "mentor_27") |
-                                (id %in% "mentor_1")|
-                                (id %in% "mentor_29")|
-                                (id %in% "mentor_31")|
-                                (id %in% "mentor_37"),
-                              "yes",
-                              "no"
-  )) 
-
-
-# create object indicating how many mentors submitted duplicate EOIs(needed for report)
 
 dup_tor <- df_tor %>% 
   filter(duplicate == "yes") %>% 
@@ -147,28 +104,8 @@ dup_tor <- df_tor %>%
 df_tor <- df_tor %>% 
   filter(duplicate == "no")
 
-# double check by looking at first name duplicates before moving forward
-which(duplicated(df_tor$first_name))
-
-# four people share the same first names (two pairs)
-
 
 # MENTEES 
-
-which(duplicated(df_tee$surname))
-
-# two possible duplicates flagged; 1 real duplicate
-# delete mentee_39; mentee_36 was the complete application
-
-
-# after reviewing the raw data, indicate duplicates in the df
-
-df_tee <- df_tee %>%
-  mutate (duplicate = ifelse ((id %in% "mentee_39")|
-                                id %in% "mentee_38",
-                              "yes",
-                              "no"
-  )) 
 
 # create object indicating how many mentees submitted duplicate EOIs(needed for report)
 
@@ -181,16 +118,12 @@ dup_tee <- df_tee %>%
 df_tee <- df_tee %>% 
   filter(duplicate == "no")
 
-# double check by looking at first name duplicates before moving forward. No shared names. 
-which(duplicated(df_tee$first_name))
-
-
 ```
 
 
 ```{r withdrawals and errors, include = FALSE, eval = FALSE}
 
-# no withdrawals or errors yet in 2026. may need to update.
+# no withdrawals or errors yet in 2026. may yet need to update.
 
 ## MENTEES
 
@@ -244,7 +177,7 @@ other_level <- df_tor %>%
 
 df_tor <- df_tor %>% 
   mutate (level_fixed = recode (as.character(id),
-                                "mentor_36" = "Level D", 
+                                "mentor_28" = "Level D", 
                             .default = as.character(level))) %>% 
   mutate(level_fixed = as.factor(level_fixed))
 
@@ -336,8 +269,8 @@ df_tor_end <- df_tor %>%
 
 df_tor <- df_tor %>%
   mutate(contract_end_notes = case_when(id %in% "mentor_13" ~ "Converted to continuing", #email confirmation
-                                        id %in% "mentor_38" ~ "Extended for two years", #email confirmation
-                                        id %in% "mentor_34" ~ "Need update",
+                                        id %in% "mentor_39" ~ "Extended for two years", #email confirmation
+                                        id %in% "mentor_35" ~ "Need update",
          TRUE ~ as.character(""))) %>% 
       relocate(contract_end_notes, .after = contract_end_year)
 
@@ -817,7 +750,7 @@ write.csv(mentees_areas_wide, here::here("00_data", "processed_data", "eoi_mente
 
 # look at notes from the three previous years re: eligible but not selected folks who applied again this year
 
-# look at eligible folks with contracts that end before 2025 (and thus can't participate next year).
+# look at eligible folks with contracts that end before 2026 (and thus can't participate next year).
 
 
 df_tee_end_25 <- df_tee %>% 
@@ -853,14 +786,8 @@ eligibility criteria for the program. Below are the screening steps:
   multiple entries and `r dup_tor` mentor applications with multiple entries. 
   We removed incomplete copies of these duplicated applications.
   
-  *  Withdrawals: We had `r withdraw_n_tee_pre` mentee applicant and `r withdraw_n_tor_pre` 
-  mentor applicant withdraw from the program before matching took place. We then had
-  `r withdraw_n_tee_pre` mentee applicant withdraw after matching took place. We will 
-  keep their mentor as a potential back up in case another mentor withdraws after the program begins.
-  
   *  Mentor eligibility:  We had `r level_no_n_tor` mentors who did not meet the 
-  eligibility criteria for the program. These were likely mentees who accidentally 
-  completed the incorrect form. 
+  eligibility criteria for the program. 
   
   *  Mentee eligibility: We had
   `r sum(previous_no_n_tee, employ_no_n_tee, level_no_n_tee, contract_no_n_tee, phd_no_n_tee)` mentees 
@@ -869,7 +796,7 @@ eligibility criteria for the program. Below are the screening steps:
   `r employ_no_n_tee` applications from people who did not hold academic positions, 
   `r phd_no_n_tee` application from people whose PhD was conferred more than 8 years ago or not 
   yet conferred, and
-  `r contract_no_n_tee` application from someone whose contracts will end before November 2025. 
+  `r contract_no_n_tee` application from applicants whose contracts will end before November 2026. 
 
   *  Missing information: We removed `r nrow(no_areas_tee)`
   mentees from the data because they did not specify the areas for growth and
@@ -911,7 +838,7 @@ knitr::kable (booktabs = T, linesep = "",
               col.names = c("College", "Number", "Percentage", "Number", "Percentage"), 
               caption = "Breakdown of Eligible Mentors and Mentees by College",
               align = 'lcc') %>% 
-    add_header_above(c(" " = 1, "Mentors (n = 43)" = 2, "Mentees (n = 38)" = 2)) %>% 
+    add_header_above(c(" " = 1, "Mentors (n = 34)" = 2, "Mentees (n = 34)" = 2)) %>% 
   styler_pdf() 
 
 
@@ -992,7 +919,7 @@ knitr::kable (
   # is confirmed
 
 col_tor_details <- df_tor %>% 
-  select (c(college, name, level_recode, id)) %>% 
+  select (c(college, name, level, id)) %>% 
   arrange(college, name) %>% 
   ungroup
 
@@ -1021,7 +948,7 @@ knitr::kable (
 # identify the mentors in each college
 
 col_tor_details <- df_tor %>% 
-  select (c(college, name, level_recode)) %>% 
+  select (c(college, name, level)) %>% 
   arrange(college) %>% 
   ungroup
 
@@ -1049,7 +976,7 @@ knitr::kable (
 # identify the mentees in each college
 
 col_tee_details <- df_tee %>% 
-  select (c(college, name, level_recode, id)) %>% 
+  select (c(college, name, level, id)) %>% 
   arrange(college, name) %>% 
   ungroup
 
@@ -1077,7 +1004,7 @@ knitr::kable (
 # identify the mentees in each college
 
 col_tee_details <- df_tee %>% 
-  select (c(college, name, level_recode)) %>% 
+  select (c(college, name, level)) %>% 
   arrange(college) %>% 
   ungroup
 
