@@ -176,10 +176,11 @@ other_level <- df_tor %>%
   filter(level %in% "Other (please specify)") 
 
 df_tor <- df_tor %>% 
-  mutate (level_fixed = recode (as.character(id),
+  mutate (level_recode = recode (as.character(id),
                                 "mentor_28" = "Level D", 
                             .default = as.character(level))) %>% 
-  mutate(level_fixed = as.factor(level_fixed))
+  mutate(level_recode = as.factor(level_recode)) %>% 
+  relocate (level_recode, .after = level)
 
 df_tor <- df_tor %>%
   mutate(level_eligibility = as.character("Eligible")) %>% 
@@ -210,8 +211,8 @@ level_no_n_tor <- df_tor %>%
 # if no levels need to be recoded, add the recode variable anyway to ensure that 
   # the mentor and mentee dataframes match
 
-df_tor <- df_tor %>%
-  mutate(level_fixed = level)
+# df_tor <- df_tor %>%
+#   mutate(level_recode = level)
 
 ## PART-TIME EMPLOYMENT ##
 
@@ -336,7 +337,7 @@ df_compare <- inner_join(df_prior, df_tee_name, by = "Mentee")
   # participate this year
 
 df_tee <- df_tee %>%
-  mutate(previous_mentee_eligibility = case_when(id %in% "mentee_7" ~ "Not eligible", # participated in 2020
+  mutate(previous_mentee_eligibility = case_when(id %in% "mentee_7" ~ "Information needed", # participated in 2020, asking for extenuating circumstances
                                            TRUE ~ as.character("Eligible"))) %>% 
   mutate(previous_mentee_eligibility = as.factor(previous_mentee_eligibility))
 
@@ -419,6 +420,9 @@ df_tee %>%
 #                                  TRUE ~ as.character((level)))) %>% 
 #   relocate(level_recode, .after = level_other)
 
+df_tee <- df_tee %>% 
+  mutate(level_recode = as.factor(level))
+
 # now mark eligibility according to level
 
 df_tee <- df_tee %>%
@@ -489,7 +493,7 @@ df_tee <- df_tee %>%
 
 df_tee_end <- df_tee %>% 
   filter(str_detect(employment_length, "Fixed-term")) %>% 
-  select(c(id, name, college, employment_length, contract_end_month, contract_end_year, level, employment_eligibility, level_eligibility, conferral_eligibility))
+  select(c(id, name, college, employment_length, contract_end_month, contract_end_year, level_recode, employment_eligibility, level_eligibility, conferral_eligibility))
 
 # I did this manually after screening by contract end date & level
 # then I reviewed their EOIs and contacted those who did not provide contract end date details
@@ -663,7 +667,7 @@ long2 <- long %>%
 
 # select relevant data
 areas <- long2 %>% 
-  select (c(id,`name and college`, name, college, level, areas, rank, interest, role)) %>% 
+  select (c(id,`name and college`, name, college, level_recode, areas, rank, interest, role)) %>% 
   filter(interest == "yes")
 
 # make this wide again and combine all of the interests into one cell. 
@@ -753,7 +757,7 @@ write.csv(mentees_areas_wide, here::here("00_data", "processed_data", "eoi_mente
 # look at eligible folks with contracts that end before 2026 (and thus can't participate next year).
 
 
-df_tee_end_25 <- df_tee %>% 
+df_tee_end_26 <- df_tee %>% 
   filter(str_detect(employment_length, "Fixed-term")) %>% 
   select(c(id, name, college, employment_length, contract_end_date, level_recode, employment_eligibility, level_eligibility, conferral_eligibility)) %>% 
   filter(grepl("25", contract_end_date))
@@ -919,7 +923,7 @@ knitr::kable (
   # is confirmed
 
 col_tor_details <- df_tor %>% 
-  select (c(college, name, level, id)) %>% 
+  select (c(college, name, level_recode, id)) %>% 
   arrange(college, name) %>% 
   ungroup
 
@@ -948,7 +952,7 @@ knitr::kable (
 # identify the mentors in each college
 
 col_tor_details <- df_tor %>% 
-  select (c(college, name, level)) %>% 
+  select (c(college, name, level_recode)) %>% 
   arrange(college) %>% 
   ungroup
 
@@ -976,7 +980,7 @@ knitr::kable (
 # identify the mentees in each college
 
 col_tee_details <- df_tee %>% 
-  select (c(college, name, level, id)) %>% 
+  select (c(college, name, level_recode, id)) %>% 
   arrange(college, name) %>% 
   ungroup
 
@@ -1004,7 +1008,7 @@ knitr::kable (
 # identify the mentees in each college
 
 col_tee_details <- df_tee %>% 
-  select (c(college, name, level)) %>% 
+  select (c(college, name, level_recode)) %>% 
   arrange(college) %>% 
   ungroup
 

@@ -128,7 +128,7 @@ df_tor <- df_tor %>%
 #### CHECK FOR DUPLICATES ####
 
 # [note: the reason this is here rather than preprocessing is so I can use the 
-# data for reporting; if this chunk is updated, also update it in 00_ file]
+# data for reporting]
 
 # get our starting numbers
 
@@ -155,10 +155,8 @@ which(duplicated(df_tor$surname))
 # delete mentor_31; mentor_36 was the complete application
 # delete mentor_37; mentor_28 was the complete application
 
-
-# after reviewing the raw data, indicate duplicates in the df
-# if we have more than one, add them in like this:  ((id %in% "mentee_25") | (id %in% "mentee_23")
-
+# mark the duplicates in the data; if none, add a duplicate column so it matches the 
+  # mentee data and the rest of the code
 
 df_tor <- df_tor %>%
   mutate (duplicate = ifelse ((id %in% "mentor_27") |
@@ -172,9 +170,6 @@ df_tor <- df_tor %>%
 
 
 
-
-# remove duplicate from working df
-
 # double check by looking at first name duplicates before moving forward
 which(duplicated(df_tor$first_name))
 
@@ -185,22 +180,24 @@ which(duplicated(df_tor$first_name))
 
 which(duplicated(df_tee$surname))
 
-# two possible duplicates flagged; 1 real duplicate
+# three possible duplicates flagged; 3 real duplicates
 # delete mentee_39; mentee_36 was the complete application
-
+# delete mentee_38; mentee_37 was the complete application
+# delete mentee_17; mentee_43 was the complete application
 
 # after reviewing the raw data, indicate duplicates in the df
 
 df_tee <- df_tee %>%
   mutate (duplicate = ifelse ((id %in% "mentee_39")|
-                                id %in% "mentee_38",
+                                (id %in% "mentee_38")|
+                              (id %in% "mentee_17"),
                               "yes",
                               "no"
   )) 
 
 
 
-# double check by looking at first name duplicates before moving forward. No shared names. 
+# double check by looking at first name duplicates before moving forward. 1 shared name. 
 which(duplicated(df_tee$first_name))
 
 
