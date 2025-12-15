@@ -85,7 +85,7 @@ df_tee$id <- as.factor(df_tee$id)
 
 #### REPORT DATA RE DUPLICATES ####
 
-# [note: this is done in the 00_.R file. We just need info for the report.
+# [note: this is determined in the 00_.R file. We just need info for the report.
 
 # get our starting numbers
 
@@ -121,40 +121,40 @@ df_tee <- df_tee %>%
 ```
 
 
-```{r withdrawals and errors, include = FALSE, eval = FALSE}
+```{r withdrawals and errors, include = FALSE, eval = TRUE}
 
-# no withdrawals or errors yet in 2026. may yet need to update.
+# Withdrawals and errors
 
 ## MENTEES
 
-# 2 withdrawals this year [1 after matching]
+# 1 withdrawals this year [1 after matching]
 
 withdraw_n_tee_pre <- df_tee %>%
-    filter(id %in% c("mentee_38")) %>% 
+    filter(id %in% c("mentee_40")) %>%
     nrow()
-
-withdraw_n_tee_post <- df_tee %>%
-    filter(id %in% c("mentee_4")) %>% 
-    nrow()
-  
+# 
+# withdraw_n_tee_post <- df_tee %>%
+#     filter(id %in% c("mentee_4")) %>% 
+#     nrow()
+#   
 # remove the mentees from the df
 
 df_tee <- df_tee %>%
-  filter(!id %in% c("mentee_38", "mentee_4"))
+  filter(!id %in% "mentee_40")
 
 
 ## MENTORS
 
 # 1 withdrawal this year [we did not force withdrawal of the mentor whose mentee withdrew post matching]
 
-withdraw_n_tor_pre <- df_tor %>%
-    filter(id %in% c("mentor_16")) %>%
-    nrow()
+# withdraw_n_tor_pre <- df_tor %>%
+#     filter(id %in% c("mentor_16")) %>%
+#     nrow()
 
 # remove the mentor from the df
 
-df_tor <- df_tor %>%
-  filter(!id %in% c("mentor_16"))
+# df_tor <- df_tor %>%
+#   filter(!id %in% c("mentor_16"))
 
 ```
 
@@ -337,7 +337,7 @@ df_compare <- inner_join(df_prior, df_tee_name, by = "Mentee")
   # participate this year
 
 df_tee <- df_tee %>%
-  mutate(previous_mentee_eligibility = case_when(id %in% "mentee_7" ~ "Information needed", # participated in 2020, asking for extenuating circumstances
+  mutate(previous_mentee_eligibility = case_when(id %in% "mentee_7" ~ "Eligible", # participated in 2020, which was disrupted by COVID
                                            TRUE ~ as.character("Eligible"))) %>% 
   mutate(previous_mentee_eligibility = as.factor(previous_mentee_eligibility))
 
@@ -363,8 +363,9 @@ employ_c <- df_tee %>%
 
 # mark them as ineligible as required 
 df_tee <- df_tee %>%
-  mutate(employment_eligibility = case_when(id %in% "mentee_17" ~ "Information needed", # no info re: role; asked to complete
+  mutate(employment_eligibility = case_when(id %in% "mentee_17" ~ "Eligible", # completed the form
                                             id %in% "mentee_35" ~ "Not eligible", # Research Assistant
+                                            id %in% "mentee_25" ~ "Not eligible", # Research Assistant
                                             TRUE ~ as.character("Eligible"))) %>% 
   mutate(employment_eligibility = as.factor(employment_eligibility))
 
@@ -427,6 +428,7 @@ df_tee <- df_tee %>%
 
 df_tee <- df_tee %>%
   mutate(level_eligibility = case_when(id %in% "mentee_35" ~ "Not eligible",
+                                       id %in% "mentee_25" ~ "Not eligible",
                                  TRUE ~ as.character("Eligible"))) %>% 
   mutate(level_eligibility = as.factor(level_eligibility))
 
@@ -453,7 +455,7 @@ df_phd <- df_tee %>%
   # [breadcrumb: resolve awaiting information eligibility issues]
   
 df_tee <- df_tee %>%
-  mutate(conferral_eligibility = case_when(id %in% "mentee_23" ~ "Information needed", # need confirmation
+  mutate(conferral_eligibility = case_when(id %in% "mentee_23" ~ "Eligible", # via email
                                   id %in% "mentee_25" ~ "Information needed", # need confirmation
                                   id %in% "mentee_35" ~ "No PhD", 
                                   TRUE ~ as.character("Eligible"))) %>% 
@@ -501,9 +503,9 @@ df_tee_end <- df_tee %>%
 
 df_tee <- df_tee %>%
   mutate(contract_eligibility = case_when(id %in% "mentee_28" ~ "Information needed", # emailed
-                                 id %in% "mentee_34" ~ "Information needed", # emailed
-                                 id %in% "mentee_2" ~ "Information needed", #emailed 
-                                 id %in% "mentee_5" ~  "Information needed", #emailed 
+                                 id %in% "mentee_34" ~ "Eligible", # via email
+                                 id %in% "mentee_2" ~ "Eligible", # via email 
+                                 id %in% "mentee_5" ~  "Eligible", # via email 
                                  id %in% "mentee_6" ~ "Information needed", #emailed 
                                  id %in% "mentee_24" ~ "Information needed", #emailed 
                                  id %in% "mentee_27" ~ "Information needed", #emailed 

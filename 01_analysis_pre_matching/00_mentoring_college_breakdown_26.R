@@ -85,6 +85,7 @@ meta_tee <- read_csv(here::here("00_data", "raw_data", "metadata_eoi_mentee.csv"
 # recode variable labels according to metadata for mentor data
 
 df_tor <- meta_rename(df = df_tor, metadata = meta_tor, old = old_variable, new = new_variable)
+df_tor [df_tor == "O'dea"] <- "O'Dea"
 
 # recode variable labels according to metadata for mentee data
 
@@ -154,6 +155,7 @@ which(duplicated(df_tor$surname))
 # delete mentor_1 & mentor_29; mentor_26 was the complete application
 # delete mentor_31; mentor_36 was the complete application
 # delete mentor_37; mentor_28 was the complete application
+# delete mentor_18; mentor_42 was teh complete application
 
 # mark the duplicates in the data; if none, add a duplicate column so it matches the 
   # mentee data and the rest of the code
@@ -163,7 +165,8 @@ df_tor <- df_tor %>%
                                 (id %in% "mentor_1")|
                                 (id %in% "mentor_29")|
                                 (id %in% "mentor_31")|
-                                (id %in% "mentor_37"),
+                                (id %in% "mentor_37")|
+                                (id %in% "mentor_42"),
                               "yes",
                               "no"
   )) 

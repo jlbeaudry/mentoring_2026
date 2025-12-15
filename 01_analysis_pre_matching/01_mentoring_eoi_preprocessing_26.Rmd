@@ -49,17 +49,18 @@ df_tee <- read_csv(here::here("00_data", "processed_data", "eoi_mentee_preproces
   # I was able to do that when loading the data this year, so don't need to do it for 2026
 
 # first mentors [create two tibbles, capitalise, and then join them together again
-  # if no one has lower case letters, then no need to create two tibbles. 
-
-df_tor1a <- df_tor %>% 
-  filter(!str_detect(surname, "O'Dea")) %>% 
-  mutate(first_name = str_to_title(first_name)) %>% 
-  mutate(surname = str_to_title(surname)) 
-
-df_tor1b <- df_tor %>%
-  filter(str_detect(surname, ("O'Dea"))) 
-
-df_tor <- full_join(df_tor1a, df_tor1b)
+#   # if no one has lower case letters, then no need to create two tibbles. 
+# 
+# df_tor1a <- df_tor %>% 
+#   filter(!str_detect(surname, "O'dea")) %>% 
+#   mutate(first_name = str_to_title(first_name)) %>% 
+#   mutate(surname = str_to_title(surname)) 
+# 
+# df_tor1b <- df_tor %>%
+#   filter(str_detect(surname, ("O'dea"))) %>% 
+#     mutate(surname = str_to_sentence(surname))
+# 
+# df_tor <- full_join(df_tor1a, df_tor1b)
 
 # df_tor <- df_tor %>%
 #   mutate(first_name = str_to_title(first_name)) %>%
