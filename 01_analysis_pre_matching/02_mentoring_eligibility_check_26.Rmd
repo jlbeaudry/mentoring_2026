@@ -186,7 +186,7 @@ df_tor <- df_tor %>%
   mutate(level_eligibility = as.character("Eligible")) %>% 
   mutate(level_eligibility = as.factor(level_eligibility))
 
-# not needed in 2025
+# not needed in 2026
 
 # after looking thru the data, three cases need to be recoded because two were 
   # promoted as of Jan 2023 and one is a level B [removed from data earlier]. 
@@ -271,12 +271,12 @@ df_tor_end <- df_tor %>%
 df_tor <- df_tor %>%
   mutate(contract_end_notes = case_when(id %in% "mentor_13" ~ "Converted to continuing", #email confirmation
                                         id %in% "mentor_39" ~ "Extended for two years", #email confirmation
-                                        id %in% "mentor_35" ~ "Need update",
+                                        id %in% "mentor_35" ~ "Not eligible", # via email
          TRUE ~ as.character(""))) %>% 
       relocate(contract_end_notes, .after = contract_end_year)
 
 df_tor <- df_tor %>%
-  mutate(contract_eligibility = case_when(str_detect(contract_end_notes, "Need update") ~ "Information needed", 
+  mutate(contract_eligibility = case_when(str_detect(contract_end_notes, "Not eligible") ~ "Not eligible", 
          TRUE ~ as.character("Eligible"))) %>% 
   mutate(contract_eligibility = as.factor(contract_eligibility))
 
@@ -456,8 +456,8 @@ df_phd <- df_tee %>%
   
 df_tee <- df_tee %>%
   mutate(conferral_eligibility = case_when(id %in% "mentee_23" ~ "Eligible", # via email
-                                  id %in% "mentee_25" ~ "Information needed", # need confirmation
-                                  id %in% "mentee_35" ~ "No PhD", 
+                                  id %in% "mentee_25" ~ "Not eligible", # Just submitted & no contract extension via email
+                                  id %in% "mentee_35" ~ "Not eligible", # no PhD
                                   TRUE ~ as.character("Eligible"))) %>% 
   mutate(conferral_eligibility = as.factor(conferral_eligibility))
 
@@ -502,17 +502,17 @@ df_tee_end <- df_tee %>%
 # this also captures those above who were students or casuals, but I'm not including those here
 
 df_tee <- df_tee %>%
-  mutate(contract_eligibility = case_when(id %in% "mentee_28" ~ "Information needed", # emailed
+  mutate(contract_eligibility = case_when(id %in% "mentee_28" ~ "Not eligible", # via email
                                  id %in% "mentee_34" ~ "Eligible", # via email
                                  id %in% "mentee_2" ~ "Eligible", # via email 
                                  id %in% "mentee_5" ~  "Eligible", # via email 
-                                 id %in% "mentee_6" ~ "Information needed", #emailed 
+                                 id %in% "mentee_6" ~ "Not eligible", # via email 
                                  id %in% "mentee_24" ~ "Information needed", #emailed 
                                  id %in% "mentee_27" ~ "Information needed", #emailed 
-                                 id %in% "mentee_30" ~ "Information needed", #emailed 
-                                 id %in% "mentee_40" ~ "Information needed", #emailed 
-                                 id %in% "mentee_32" ~ "Not eligible", # [via email]
-                                 id %in% "mentee_41" ~ "Not eligible", # [via email]
+                                 id %in% "mentee_30" ~ "Eligible", # via email 
+                            #    id %in% "mentee_40" ~ "Not eligible", # via email, but already removed as withdrawal
+                                 id %in% "mentee_32" ~ "Not eligible", # via email
+                                 id %in% "mentee_41" ~ "Not eligible", # via email
                                   TRUE ~ as.character("Eligible"))) %>% 
   mutate(contract_eligibility = as.factor(contract_eligibility))
 
@@ -792,23 +792,23 @@ eligibility criteria for the program. Below are the screening steps:
   multiple entries and `r dup_tor` mentor applications with multiple entries. 
   We removed incomplete copies of these duplicated applications.
   
+  *  Withdrawals: We had `r withdraw_n_tee_pre` mentee withdraw before being matched with 
+  a mentor. 
+  
   *  Mentor eligibility:  We had `r level_no_n_tor` mentors who did not meet the 
   eligibility criteria for the program. 
   
   *  Mentee eligibility: We had
   `r sum(previous_no_n_tee, employ_no_n_tee, level_no_n_tee, contract_no_n_tee, phd_no_n_tee)` mentees 
   who did not meet the eligibility criteria for the program. Specifically, we 
-  had `r previous_no_n_tee` application from a mentee who previously participated in the program,
-  `r employ_no_n_tee` applications from people who did not hold academic positions, 
-  `r phd_no_n_tee` application from people whose PhD was conferred more than 8 years ago or not 
-  yet conferred, and
-  `r contract_no_n_tee` application from applicants whose contracts will end before November 2026. 
+  had `r employ_no_n_tee` applications from people who did not hold academic positions and
+  `r contract_no_n_tee` applications from people whose contracts will end before November 2026. If their
+  Colleges had a mentoring program, I connected them with people in the Colleges who could discuss 
+  alternate programs.
 
-  *  Missing information: We removed `r nrow(no_areas_tee)`
-  mentees from the data because they did not specify the areas for growth and
-  `r nrow(no_areas_tor)` mentor because they did not identify the areas in which
-  they could provide mentoring. 
-
+  *  Missing information: We removed no mentees or mentors for providing incomplete
+  informatio about the areas for growth.
+  
 As such, we completed the matching process on the remaining complete and eligible
 applications from `r total_tor` mentors and `r total_tee` mentees. 
 
