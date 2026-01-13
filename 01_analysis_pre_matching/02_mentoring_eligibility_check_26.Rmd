@@ -660,7 +660,7 @@ long2 <- long %>%
   mutate(interest = case_when(rank == "NA" ~ "no", 
                                  rank == "NO" ~ "no",
                                  is.na(rank) ~ "no",
-                                 TRUE ~ as.character("yes"))) %>% 
+                                TRUE ~ as.character("yes"))) %>% 
   mutate(interest = as.factor(interest))
 
 ```
@@ -844,7 +844,7 @@ knitr::kable (booktabs = T, linesep = "",
               col.names = c("College", "Number", "Percentage", "Number", "Percentage"), 
               caption = "Breakdown of Eligible Mentors and Mentees by College",
               align = 'lcc') %>% 
-    add_header_above(c(" " = 1, "Mentors (n = 34)" = 2, "Mentees (n = 34)" = 2)) %>% 
+    add_header_above(c(" " = 1, "Mentors (n = XX)" = 2, "Mentees (n = XX)" = 2)) %>% 
   styler_pdf() 
 
 

@@ -28,7 +28,8 @@ knitr::opts_chunk$set(echo = FALSE,
                       include = FALSE, 
                       fig.path = here::here("figs"))
 
-options(knitr.duplicate.label = "allow") # use this when you use the child files
+options(knitr.duplicate.label = "allow", # use this when you use the child files
+        knitr.kable.format = "latex") # hopefully I can use this with my tables
 ```
 
 
@@ -189,9 +190,9 @@ knitr::kable (format = "latex", booktabs = T, linesep = "",
 # make the data long again....
 
 names_long <- df %>% 
-  select (-c(`first_name`:title, work_phone:contract_end_date, why_mentor:mentoring_approach)) %>% 
+  select (-c(`first_name`:`name and college`, preferred_name:title, work_phone:contract_end_notes, why_mentor:mentoring_approach)) %>% 
   pivot_longer(
-    cols = planning:other_2,
+    cols = planning:other_1, #did not include 'other_2' because it was empty
     names_to = "areas", 
     values_to = "rank"  
                )
@@ -203,13 +204,13 @@ names_long2 <- names_long %>%
 
 # select relevant data for all
 names <- names_long2 %>% 
-  select (c(id,`name and college`, name, college, level_recode, areas, rank, interest, role)) %>% 
+  select (c(id, name, college, level_recode, areas, rank, interest, role)) %>% 
   filter(interest == "yes")
 
 # make this wide again and combine all of the names into one cell. # do only for mentors
 names_wide_tor <- names %>% 
   filter(role == "mentor") %>% 
-  select (-c(`name and college`, rank)) %>% 
+  select (-c(rank)) %>% 
   pivot_wider(id_cols = "areas", names_from = "id", values_from = name)
 
 # combine the areas into one column
@@ -243,7 +244,7 @@ knitr::kable (format = "latex", booktabs = T, linesep = "",
 # make this wide again and combine all of the names into one cell. # do only for mentees
 names_wide_tee <- names %>% 
   filter(role == "mentee") %>% 
-  select (-c(`name and college`, rank)) %>% 
+  select (-c(rank)) %>% 
   pivot_wider(id_cols = "areas", names_from = "id", values_from = name)
 
 
@@ -253,9 +254,10 @@ names_wide_tee2 <- names_wide_tee %>%
     arrange(areas)
 
 
+
 names_wide_tee2 %>% 
   select(c(areas, names)) %>% 
-knitr::kable (format = "latex", booktabs = T, linesep = "",
+knitr::kable (booktabs = T, linesep = "",
               col.names = c("Areas", "Mentees"), 
               caption = 
                 sprintf("Mentees by Areas for Growth (n = %d)", 
