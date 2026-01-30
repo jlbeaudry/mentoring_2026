@@ -10,13 +10,13 @@ header-includes:
   - \usepackage{titling}
     \setlength{\droptitle}{-2cm} # removes some of the white space above title
   - \pretitle{\begin{center}
-    \includegraphics[width=1.5in, height=1.5in]{flinders-university-horizontal-master.png}\LARGE\\} # adds logo
+    \includegraphics[width=1.5in, height=0.5in]{flinders-university-horizontal-master.png}\LARGE\\} # adds logo
   - \posttitle{\end{center}}
   - \usepackage{fancyhdr}
   - \fancypagestyle{plain}{\pagestyle{fancy}} # sets the footer on page 1
   - \pagestyle{fancy} # sets the footer on page 2 and beyond
   - \fancyhf{} # clears existing header & footer
-  - \renewcommand{\headrulewidth}{0pt} # removes the line from the header
+  - \renewcommand{\headrulewidth}{0pt} # removes the line frofm the header
   - \renewcommand{\arraystretch}{1.4} #adds whitespace to all tables
   - \fancyfoot[L]{Jen Beaudry} # my name in footer
   - \fancyfoot[R]{\thepage} # page number in foooter

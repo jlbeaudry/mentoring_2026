@@ -1,0 +1,866 @@
+---
+title: "Researcher Mentoring Program for Early-Career Researchers (2026)"
+subtitle: "Mentor and Mentee Pairing"
+#author: "Jen Beaudry"
+date: "January 2026"
+output: pdf_document
+editor_options: 
+  chunk_output_type: console
+header-includes:
+  - \usepackage{titling}
+    \setlength{\droptitle}{-2cm} # removes some of the white space above title
+  - \pretitle{\begin{center}
+    \includegraphics[width=1.5in, height=1.5in]{flinders-university-horizontal-master.png}\LARGE\\} # adds logo
+  - \posttitle{\end{center}}
+  - \usepackage{fancyhdr}
+  - \fancypagestyle{plain}{\pagestyle{fancy}} # sets the footer on page 1
+  - \pagestyle{fancy} # sets the footer on page 2 and beyond
+  - \fancyhf{} # clears existing header & footer
+  - \renewcommand{\headrulewidth}{0pt} # removes the line from the header
+  - \fancyfoot[L]{Jen Beaudry} # my name in footer
+  - \fancyfoot[R]{\thepage} # page number in foooter
+---
+
+```{r setup, include=FALSE}
+
+knitr::opts_chunk$set(echo = FALSE, 
+                      include = FALSE, 
+                      fig.path = here::here("figs"))
+
+options(knitr.duplicate.label = "allow") # use this when you use the child files
+```
+
+```{r notes to self, include=FALSE}
+
+# we have no backup mentors
+# we are running the tiered pilot program. I haven't captured that in this code yet.
+
+```
+
+```{r functions, include=FALSE}
+
+styler_pdf <- function(dat) {
+  dat %>%
+     kable_styling(full_width = F, 
+                latex_options = c("striped", "HOLD_position"))
+}
+
+```
+
+
+```{r library, include=FALSE}
+
+library(here)
+library(tidyverse)
+library(kableExtra)
+library(janitor)
+
+source(here("..", "functions", "read_qualtrics.R"))
+
+```
+
+
+```{r load data, include=FALSE}
+
+# mentor data
+
+df_tor <- read_csv(here::here("00_data", "processed_data", "eoi_mentor_eligible.csv"), lazy = FALSE)
+
+# mentee data
+
+df_tee <- read_csv(here::here("00_data", "processed_data", "eoi_mentee_eligible.csv"), lazy = FALSE)
+
+# load metadata for the area variables
+
+meta_tor <- read_csv(here::here("00_data", "raw_data", "metadata_eoi_mentor.csv"), lazy = FALSE) %>%
+    filter(scale == "areas")
+
+# load metadata for the area variables
+
+meta_tee <- read_csv(here::here("00_data", "raw_data", "metadata_eoi_mentee.csv"), lazy = FALSE) %>%
+    filter(scale == "areas")
+
+```
+
+
+```{r join the tibbles, include = FALSE}
+
+# join the tibbles together so I can report on the mentees and mentors in the pilot program too.
+  # I used to do this later, but now I have to do it up front. 
+
+# add college abbreviations and change the type of variables to characters, so I can join them  
+
+df_tee <- df_tee %>%
+  mutate(
+    college_abb = case_when(college %in% "Business, Government and Law" ~ "CBGL",
+      college %in% "Education, Psychology and Social Work" ~ "CEPSW",
+      college %in%  "Humanities, Arts and Social Sciences" ~ "CHASS",
+      college %in%  "Nursing and Health Sciences" ~ "CNHS",
+      college %in%  "Medicine and Public Health" ~ "CMPH",
+      college %in%  "Science and Engineering" ~ "CSE",
+      TRUE ~ as.character("")
+    )
+  ) %>% 
+  unite ("name and college_abb", c(name,college_abb), sep = " - ", remove = FALSE) %>% 
+  mutate_if(is.numeric, as.character)
+
+# final number of mentees selected for the program
+total_tee <- nrow(df_tee)
+
+df_tor <- df_tor %>% 
+    mutate(
+    college_abb = case_when(college %in% "Business, Government and Law" ~ "CBGL",
+      college %in% "Education, Psychology and Social Work" ~ "CEPSW",
+      college %in%  "Humanities, Arts and Social Sciences" ~ "CHASS",
+      college %in%  "Nursing and Health Sciences" ~ "CNHS",
+      college %in%  "Medicine and Public Health" ~ "CMPH",
+      college %in%  "Science and Engineering" ~ "CSE",
+      TRUE ~ as.character("")
+    )
+  ) %>% 
+  unite ("name and college_abb", c(name,college_abb), sep = " - ", remove = FALSE) %>% 
+  mutate_if(is.numeric, as.character)
+
+# final number of mentees selected for the program
+total_tor <- nrow(df_tor)
+
+#combine the paired mentor and mentee tibbles into one
+
+df <- full_join(df_tor, df_tee)
+
+# then use this for additional processing
+
+```
+
+
+```{r code factors, include=FALSE}
+
+df$college <- as.factor(df$college)
+
+df$id <- as.factor(df$id)
+
+#df$`name and college` <- as.factor(df$`name and college`)
+
+```
+
+
+```{r add pairing information}
+
+# this is based on the pairing process that I  completed. I am running this
+  # up here so I can rerun some of the tables to show me only the folks who 
+  # still need to be paired. I will not run this later for the final report.
+  # The second number is the pair number.
+
+
+df <- df %>% 
+  mutate(pair = case_when(id %in% "mentor_28" ~ "01", # first mentors
+                          id %in% "mentor_9" ~ "02",
+                          id %in% "mentor_34" ~ "03",
+                          id %in% "mentor_13" ~ "04",
+                          id %in% "mentor_7" ~ "05",
+                          id %in% "mentor_20" ~ "06",
+                          id %in% "mentor_36" ~ "07",
+                          id %in% "mentor_25" ~ "08",
+                          id %in% "mentor_2" ~ "09",
+                          id %in% "mentor_41" ~ "10",
+                          id %in% "mentor_15" ~ "11",
+                          id %in% "mentor_8" ~ "12",
+                          id %in% "mentor_4" ~ "13",
+                          id %in% "mentor_11" ~ "14",
+                          id %in% "mentor_21" ~ "15",
+                          id %in% "mentor_30" ~ "16",
+                          id %in% "mentor_33" ~ "17",
+                          id %in% "mentor_12" ~ "18",
+                          id %in% "mentor_24" ~ "19",
+                          id %in% "mentor_38" ~ "20",
+                          id %in% "mentor_42" ~ "21",
+                          id %in% "mentor_23" ~ "22",
+                          id %in% "mentor_5" ~ "23",
+                          id %in% "mentor_19" ~ "24",
+                          id %in% "mentor_26" ~ "25",
+                          id %in% "mentor_39" ~ "26",
+                          id %in% "mentor_10" ~ "27",
+                          id %in% "mentor_6" ~ "28",
+                          id %in% "mentor_3" ~ "29",
+                          id %in% "mentor_17" ~ "30",
+                          id %in% "mentor_14" ~ "31",
+                          id %in% "mentor_16" ~ "32",
+                          id %in% "mentor_40" ~ "33",
+                          id %in% "mentor_32" ~ "34",
+                          id %in% "mentee_22" ~ "01", #then mentees
+                          id %in% "mentee_29" ~ "02",
+                          id %in% "mentee_11" ~ "03",
+                          id %in% "mentee_8" ~ "04",
+                          id %in% "mentee_16" ~ "05",
+                          id %in% "mentee_31" ~ "06",
+                          id %in% "mentee_36" ~ "07",
+                          id %in% "mentee_30" ~ "08",
+                          id %in% "mentee_9" ~ "09",
+                          id %in% "mentee_10" ~ "10",
+                          id %in% "mentee_37" ~ "11",
+                          id %in% "mentee_1" ~ "12",
+                          id %in% "mentee_33" ~ "13",
+                          id %in% "mentee_20" ~ "14",
+                          id %in% "mentee_43" ~ "15",
+                          id %in% "mentee_19" ~ "16",
+                          id %in% "mentee_42" ~ "17",
+                          id %in% "mentee_2" ~ "18",
+                          id %in% "mentee_5" ~ "19",
+                          id %in% "mentee_24" ~ "20",
+                          id %in% "mentee_7" ~ "21",
+                          id %in% "mentee_34" ~ "22",
+                          id %in% "mentee_21" ~ "23",
+                          id %in% "mentee_4" ~ "24",
+                          id %in% "mentee_23" ~ "25",
+                          id %in% "mentee_12" ~ "26",
+                          id %in% "mentee_15" ~ "27",
+                          id %in% "mentee_26" ~ "28",
+                          id %in% "mentee_3" ~ "29",
+                          id %in% "mentee_14" ~ "30",
+                          id %in% "mentee_13" ~ "31",
+                          TRUE ~ as.character("not paired"))) %>% 
+           mutate(pair = as.factor(pair)) 
+        
+         
+# now show me those who have NOT been paired
+
+df_to_pair <- df %>% 
+  filter(pair == "not paired") %>% 
+  select(c(name, college, email))
+
+# show the mentors who are paired & check the number of obs to my list
+
+df_check <- df %>% 
+  filter(pair != "not paired")
+
+#check for duplicated pair numbers
+
+df_check %>% get_dupes(pair)
+
+# they should all be two because we have mentors and mentees.
+
+
+#### WRITE DATA ####
+  
+# when done pairing, write the data to a new file to make it easier to email folks & so I have a record
+# row.names gets rid of the first column from the dataframe. No need in 2026
+
+# write.csv(df_tor_to_pair, here::here("00_data", "paired_data", "mentors_not_paired_prioritise_next_year.csv"), row.names = FALSE)
+# 
+# 
+ rm(df_check, df_to_pair)
+
+```
+
+
+```{r add pairing information for mentees, eval = FALSE}
+
+# I have included this above, so I don't need this in 2026.
+
+# this is based on the pairing process that I completed. I am running this
+  # up here so I can rerun some of the tables to show me only the folks who 
+  # still need to be paired. I will not run this later for the final report.
+  # The second number is the pair number.
+
+df_tee <- df_tee %>% 
+  mutate(pair = case_when(id %in% "mentee_22" ~ "01",
+                          id %in% "mentee_29" ~ "02",
+                          id %in% "mentee_11" ~ "03",
+                          id %in% "mentee_8" ~ "04",
+                          id %in% "mentee_16" ~ "05",
+                          id %in% "mentee_31" ~ "06",
+                          id %in% "mentee_36" ~ "07",
+                          id %in% "mentee_30" ~ "08",
+                          id %in% "mentee_9" ~ "09",
+                          id %in% "mentee_10" ~ "10",
+                          id %in% "mentee_37" ~ "11",
+                          id %in% "mentee_1" ~ "12",
+                          id %in% "mentee_33" ~ "13",
+                          id %in% "mentee_20" ~ "14",
+                          id %in% "mentee_43" ~ "15",
+                          id %in% "mentee_19" ~ "16",
+                          id %in% "mentee_42" ~ "17",
+                          id %in% "mentee_2" ~ "18",
+                          id %in% "mentee_5" ~ "19",
+                          id %in% "mentee_24" ~ "20",
+                          id %in% "mentee_7" ~ "21",
+                          id %in% "mentee_34" ~ "22",
+                          id %in% "mentee_21" ~ "23",
+                          id %in% "mentee_4" ~ "24",
+                          id %in% "mentee_23" ~ "25",
+                          id %in% "mentee_12" ~ "26",
+                          id %in% "mentee_15" ~ "27",
+                          id %in% "mentee_26" ~ "28",
+                          id %in% "mentee_3" ~ "29",
+                          id %in% "mentee_14" ~ "30",
+                          id %in% "mentee_13" ~ "31",
+                          id %in% "mentor_25" ~ "32",
+                          id %in% "mentor_41" ~ "33",
+                          id %in% "mentor_36" ~ "34",
+                            TRUE ~ as.character("not paired"))) %>% 
+           mutate(pair = as.factor(pair)) %>% 
+  relocate(pair, .after=id)
+        
+# now show me those who have not been paired
+
+df_tee_to_pair <- df_tee %>%  
+  filter(pair == "not paired") %>% 
+  select(c(name, college, email))
+
+# show the mentees who are paired
+
+df_tee_check <- df_tee %>% 
+  filter(pair != "not paired")
+
+#check for duplicated pair numbers
+
+df_tee_check %>% get_dupes(pair)
+
+
+#### WRITE DATA ####
+  
+# when done pairing, write the data to a new file to make it easier to email folks
+# row.names gets rid of the first column from the dataframe.
+# none this year
+
+# write.csv(df_tee_to_pair, here::here("paired_data", "not_paired_prioritise_next_year.csv"), row.names = FALSE)
+
+rm(df_tee_check, df_tee_to_pair)
+
+```
+
+
+```{r pilot_program_participants, eval = TRUE}
+
+df <- df %>% 
+  mutate(pilot = case_when(id %in% "mentor_16" ~ "Lead Mentor",
+                           id %in% "mentor_25" ~ "Bridge Mentor",
+                           id %in% "mentee_30" ~ "Emerging Researcher",
+                           id %in% "mentor_40" ~ "Lead Mentor",
+                           id %in% "mentor_41" ~ "Bridge Mentor",
+                           id %in% "mentee_10" ~ "Emerging Researcher",
+                           id %in% "mentor_32" ~ "Lead Mentor",
+                           id %in% "mentor_36" ~ "Bridge Mentor",
+                           id %in% "mentee_36" ~ "Emerging Researcher",
+                                TRUE ~ as.character("Not involved"))) %>% 
+  mutate(pilot = as.factor(pilot))
+
+
+```
+
+
+
+Table \ref{tab:college_breakdown} shows the number of mentees and mentors per 
+College who were selected to participate in the program. 
+
+REWRITE THIS AND ADD INFO ABOUT THE PILOT HERE.
+For the first time ever, we have had more mentors express an interest in the 
+program than mentees. This is likely the result of our concerted efforts to 
+attract more mentors to the program along with the possibility that we are 
+adequately meeting the demand from our Early Career Researcher community, 
+given the larger cohorts that we have had in the previous 3 years (30--38 pairs, 
+compared to 12--20 pairs in the past). 
+
+As such, we had 31 traditional pairs in the program in 2026. We had 3 triads in 
+the pilot program. 
+
+The percentage column represents the percentage of mentors from each 
+College and the percentage of mentees from each College who are participating
+in this year's program. As evident from this table, 
+the College of Humanities, Arts and Social Sciences had a larger percentage of mentors
+compared to the percentage of mentees in the program this year. 
+The College of Medicine and Public Health had the largest 
+percentage of mentees in the program, which was not the case for the mentors. The 
+other Colleges had similar percentages of mentees and mentors in the program. 
+
+
+```{r college_breakdown, include=TRUE}
+
+# how many per college
+
+col_tor <- df %>% 
+  filter(role == "mentor") %>% 
+  group_by(college) %>% 
+  summarise(n = n()) %>% 
+  mutate(perc = round(100*(n / sum(n)),2)) %>% 
+  arrange(college) %>% 
+  ungroup
+
+col_tee <- df %>% 
+ filter(role == "mentee") %>% 
+  group_by(college) %>% 
+  summarise(n = n()) %>% 
+  mutate(perc = round(100*(n / sum(n)),2)) %>% 
+  arrange(college) %>% 
+  ungroup
+
+
+col <- full_join (col_tor, col_tee, by = "college") %>% 
+    replace(is.na(.), 0)
+
+# need to manually update the number of mentors and mentees in the header
+
+col %>% 
+knitr::kable (booktabs = T, linesep = "",
+              col.names = c("College", "Number", "Percentage", "Number", "Percentage"), 
+              caption = "Breakdown of Mentors and Mentees by College",
+              align = 'lcc') %>% 
+    add_header_above(c(" " = 1, "Mentors (n = 34)" = 2, "Mentees (n = 31)" = 2)) %>% 
+  styler_pdf() 
+
+
+```
+
+\newpage
+
+Table \ref{tab:mentor_details} shows the details of the mentors who were selected 
+to participate in the program. 
+
+
+```{r mentor_details, include=TRUE}
+
+# identify the mentors in each college
+
+col_tor_details <- df %>% 
+    filter(role == "mentor") %>% 
+  select (c(college, name, level_recode)) %>% 
+  arrange(college) %>% 
+  ungroup
+
+
+knitr::kable (
+  col_tor_details[, c(2,3)],
+  booktabs = T,
+  linesep = "",
+  col.names = c("Names", "Levels"),
+  caption =
+    sprintf("Breakdown of Mentors by College (n = %d)",
+            total_tor),
+  align = 'lcc'
+  ) %>%
+  pack_rows (index = table(col_tor_details$college)) %>%
+  styler_pdf()
+
+
+```
+
+\newpage
+
+Table \ref{tab:mentee_details} shows the details of the mentees who were selected 
+to participate in the program. 
+
+```{r mentee_details, include=TRUE}
+
+# identify the mentees in each college
+
+col_tee_details <- df %>% 
+  filter(role == "mentee") %>% 
+  select (c(college, name, level_recode)) %>% 
+  arrange(college) %>% 
+  ungroup
+
+
+knitr::kable (
+  col_tee_details[, c(2,3)], # select only the names and levels columns
+  booktabs = T,
+  linesep = "",
+  col.names = c("Names", "Levels"),
+  caption =
+    sprintf("Breakdown of Mentees by College (n = %d)",
+            total_tee),
+  align = 'lc', 
+  longtable = T #break the table over multiple pages
+  ) %>%
+  pack_rows (index = table(col_tee_details$college)) %>%
+  kable_styling(full_width = F, 
+                latex_options = c("repeat_header", "hold_position", "striped")) 
+# use different styling to repeat the header
+
+```
+
+
+
+
+```{r mentee_details_expansive, include=FALSE}
+
+# we used this detail for the mentee roundtable for HDR supervision. This isn't
+  # part of the regular report. 
+
+# This is the text for the intro to the table.
+
+# \newpage
+# 
+# Table \ref{tab:mentor_details} shows the details of the mentors who were selected 
+# to participate in the program. 
+
+
+# identify the mentees in each college
+
+col_tee_details_more <- df %>% 
+    filter(role == "mentee") %>% 
+  select (c(college, name, level_recode, position, employment_length)) %>% 
+  arrange(college) %>% 
+  ungroup
+
+
+knitr::kable (
+  col_tee_details_more[, c(2:5)], # select only the names and levels columns
+  booktabs = T,
+  linesep = "",
+  col.names = c("Names", "Levels", "Position", "Employment"),
+  caption =
+    sprintf("Breakdown of Mentees by College (n = %d)",
+            total_tee),
+  align = 'lcll', 
+  longtable = T #break the table over multiple pages
+  ) %>%
+  pack_rows (index = table(col_tee_details_more$college)) %>%
+    column_spec(3, width = "3in") %>% 
+  kable_styling(full_width = F, 
+                latex_options = c("repeat_header", "hold_position", "striped")) 
+# use different styling to repeat the header
+
+```
+
+\newpage
+
+Table \ref{tab:pairs_details_for_report} shows which mentor each mentee was paired with. 
+
+```{r pairs_details_for_pairing_test, include=TRUE, eval = FALSE}
+
+# select the key info that I want to show
+
+pairs <- df %>% 
+  select(pair, pilot, preferred_name, name, college, `name and college`, `name and college_abb`, email, role) %>% 
+  filter (pilot != "Lead Mentor") %>% 
+  arrange(pair) %>% 
+  ungroup
+
+# number of pairs
+
+n_pairs <- length(unique(pairs$pair))
+
+pairs_by_role <- pairs %>% 
+  select (-pilot) %>% 
+  pivot_wider(
+    names_from = role,
+    values_from = c(preferred_name, name, college, `name and college`, `name and college_abb`, email)
+  ) %>% 
+  relocate(contains("_mentor"), .after = last_col())
+
+# # decide which version I want
+# simple_pairs <- pairs_by_role %>% 
+#   select(-c(contains(c("email", "first_name", "name and college"))))
+
+# # decide which version I want [if I select this version, I will have to change the kable]
+# simple_pairs <- pairs_by_role %>% 
+# select(-c(college_mentor, college_mentee, name_mentee, name_mentor, contains(c("email", "first_name"))))
+
+# USE THIS VERSION BECAUSE IT KEEPS EVERYTHING ON ONE LINE
+
+simple_pairs <- pairs_by_role %>%
+select(-c(college_mentor, college_mentee, name_mentee, name_mentor, `name and college_mentee`,
+          `name and college_mentor`, contains(c("email", "preferred_name")))) %>% 
+      arrange ()
+
+
+simple_pairs %>% 
+  knitr::kable (booktabs = F, linesep = "\\addlinespace",
+  col.names = c("Pair", "Mentee", "Mentor"),
+  caption = sprintf("Details of Matched Pairs (n = %d)",
+            n_pairs),
+  align = 'cll', 
+  longtable = T) %>%
+  column_spec(2, width = "3in") %>% 
+  column_spec(3, width = "3in") %>% 
+  kable_styling(full_width = F, 
+                latex_options = c("repeat_header", "hold_position", "striped"))
+
+
+
+#### WRITE DATA ####
+  
+# when done preprocessing, write the data to new files
+# row.names gets rid of the first column from the dataframe.
+
+write.csv(simple_pairs, here::here("00_data", "paired_data", "pairs.csv"), row.names = FALSE)
+
+
+```
+
+\renewcommand{\arraystretch}{1.5}
+```{r pairs_details_for_report, include=TRUE}
+
+# latex code above adds whitespace to the table: https://stackoverflow.com/questions/53794142/increase-line-row-spacing-with-kableextra
+
+# select the key info that I want to show [remove pair number for the final report]
+
+pairs <- df %>% 
+  select(pair, pilot, preferred_name, name, college, `name and college`, `name and college_abb`, email, role) %>% 
+  arrange(pair) %>% 
+  filter (pilot != "Lead Mentor") %>% 
+  ungroup
+
+# number of pairs
+
+n_pairs <- length(unique(pairs$pair))
+
+pairs_by_role <- pairs %>% 
+    select (-pilot) %>%
+  pivot_wider(
+    names_from = role,
+    values_from = c(preferred_name, name, college, `name and college`, `name and college_abb`, email)
+  ) %>% 
+  relocate(contains("_mentor"), .after = last_col())
+
+# # decide which version I want
+# simple_pairs <- pairs_by_role %>% 
+#   select(-c(contains(c("email", "first_name", "name and college"))))
+
+# # decide which version I want [if I select this version, I will have to change the kable]
+# simple_pairs <- pairs_by_role %>% 
+# select(-c(college_mentor, college_mentee, name_mentee, name_mentor, contains(c("email", "first_name"))))
+
+# USE THIS VERSION BECAUSE IT KEEPS EVERYTHING ON ONE LINE
+
+simple_pairs <- pairs_by_role %>%
+select(-c(pair, college_mentor, college_mentee, name_mentee, name_mentor, `name and college_mentee`,
+          `name and college_mentor`, contains(c("email", "preferred_name")))) %>% 
+      arrange (`name and college_abb_mentee`, `name and college_abb_mentor`)
+
+
+simple_pairs %>% 
+  knitr::kable (format = "latex",
+                booktabs = TRUE, 
+                linesep = "", #removes the extra space every 5 rows
+  col.names = c("Mentee", "Mentor"),
+  caption = sprintf("Details of Matched Pairs (n = %d)",
+            n_pairs),
+  align = 'll', 
+  longtable = T) %>%
+  column_spec(1, width = "3in") %>% 
+  column_spec(2, width = "3in") %>% 
+  kable_styling(full_width = F, 
+                latex_options = c("repeat_header", "hold_position", "striped"))
+
+
+
+#### WRITE DATA ####
+  
+# when done preprocessing, write the data to new files
+# row.names gets rid of the first column from the dataframe.
+
+write.csv(simple_pairs, here::here("00_data", "paired_data", "pairs.csv"), row.names = FALSE)
+
+
+```
+
+
+
+```{r pairs details for emails, eval = TRUE}
+
+# get the email details 
+  
+pairs_by_role_emails <- pairs_by_role %>% 
+  select(-contains(c("preferred_name", "name and college")))
+  
+  
+#### WRITE DATA ####
+  
+# when done pairing, write the data to a new file to make it easier to email folks
+# row.names gets rid of the first column from the dataframe.
+
+write.csv(pairs_by_role_emails, here::here("00_data", "paired_data", "pairs_with_emails.csv"), row.names = FALSE)
+
+
+```
+
+```{r details for mail merge, eval = TRUE, include = FALSE}
+
+# edit the text so I can copy the name and college from excel
+
+pairs_by_role <- pairs_by_role %>% 
+  mutate (`name_and_college_mentor` = str_replace(`name and college_mentor`, " - ", " from the College of ")) %>% 
+    mutate (`name_and_college_mentee` = str_replace(`name and college_mentee`, " - ", " from the College of "))
+
+for_mentees_for_merge <- pairs_by_role %>% 
+  select(c(email_mentee, preferred_name_mentee, name_and_college_mentor, preferred_name_mentor)) %>% 
+  relocate(email_mentee, .after = last_col())
+
+for_mentors_for_merge <- pairs_by_role %>% 
+  select(c(email_mentor, preferred_name_mentor, name_and_college_mentee, preferred_name_mentee)) %>% 
+    relocate(email_mentor, .after = last_col())
+
+#### WRITE DATA ####
+  
+# write a new file for both roles for use with mail merge
+
+write.csv(for_mentors_for_merge, here::here("00_data", "paired_data", "for_mentors_with_merge.csv"), row.names = FALSE)
+
+write.csv(for_mentees_for_merge, here::here("00_data", "paired_data", "for_mentees_with_merge.csv"), row.names = FALSE)
+
+```
+
+
+```{r dietary details, eval = FALSE}
+
+dietary <- df %>% 
+  select(role, name, dietary) %>% 
+  arrange(name) %>% 
+  ungroup
+
+dietary %>% 
+  knitr::kable (booktabs = T, linesep = "\\addlinespace",
+  col.names = c("Role", "Name", "Dietary"),
+  caption = "Dietary Requirements", 
+  align = 'lll', 
+  longtable = T) %>%
+  column_spec(2, width = "3in") %>% 
+  column_spec(3, width = "3in") %>% 
+  kable_styling(full_width = F, 
+                latex_options = c("repeat_header", "hold_position", "striped"))
+
+#### WRITE DATA ####
+  
+# when done preprocessing, write the data to new files
+# row.names gets rid of the first column from the dataframe.
+
+write.csv(dietary, here::here("00_data", "paired_data", "dietary.csv"), row.names = FALSE)
+
+```
+
+
+```{r campus details, eval = FALSE}
+
+campus <- df %>% 
+  select(role, name, email, campus) %>% 
+  arrange(name) %>% 
+  ungroup
+
+campus %>% 
+  knitr::kable (booktabs = T, linesep = "\\addlinespace",
+  col.names = c("Role", "Name", "Email", "Campus"),
+  caption = "Where are participants are located", 
+  align = 'llll', 
+  longtable = T) %>%
+  column_spec(2, width = "3in") %>% 
+  column_spec(3, width = "3in") %>% 
+  kable_styling(full_width = F, 
+                latex_options = c("repeat_header", "hold_position", "striped"))
+
+#### WRITE DATA ####
+  
+# when done preprocessing, write the data to new files
+# row.names gets rid of the first column from the dataframe.
+
+write.csv(campus, here::here("00_data", "paired_data", "campus.csv"), row.names = FALSE)
+
+```
+
+```{r output names for colleges, eval = FALSE}
+
+# use this to send the list of names to the colleges
+
+# BGL
+
+bgl_tee <- df_tee %>% filter(str_detect(college, "Business")) %>% select(name)
+bgl_tor <- df_tor %>% filter(str_detect(college, "Business")) %>% select(name)
+
+# EPSW
+
+epsw_tee <- df_tee %>% filter(str_detect(college, "Education")) %>% select(name)
+epsw_tor <- df_tor %>% filter(str_detect(college, "Education")) %>% select(name)
+
+# HASS
+
+hass_tee <- df_tee %>% filter(str_detect(college, "Humanities")) %>% select(name)
+hass_tor <- df_tor %>% filter(str_detect(college, "Humanities")) %>% select(name)
+
+# mph
+
+mph_tee <- df_tee %>% filter(str_detect(college, "Medicine")) %>% select(name)
+mph_tor <- df_tor %>% filter(str_detect(college, "Medicine")) %>% select(name)
+
+# NHS
+
+nhs_tee <- df_tee %>% filter(str_detect(college, "Nursing")) %>% select(name)
+nhs_tor <- df_tor %>% filter(str_detect(college, "Nursing")) %>% select(name)
+
+# SE
+
+se_tee <- df_tee %>% filter(str_detect(college, "Engineering")) %>% select(name)
+se_tor <- df_tor %>% filter(str_detect(college, "Engineering")) %>% select(name)
+
+## I must be able to build a function for this, but not today! this is my 
+  # inspiration
+
+# tee_by_college <- function(college, folder = here::here("paired_data")) {
+#   
+#     tee_filtered <- df_tee %>% 
+#     filter(college %in% c("Medicine and Public Health", college) %>% 
+#              mutate(college = fct_inorder(college)) 
+# 
+# }
+# 
+# 
+# 
+# write.csv(tee_filtered, file = str_glue("tee_{college}.csv"), row.names = FALSE)
+
+write <- function(x, file, folder = here::here("00_data", "paired_data")) {
+  write.csv(x, file = str_glue("tee_(x).csv"))
+}
+
+write(x = bgl_tee)
+
+```
+
+```{r network analysis, eval = FALSE}
+
+# I need to keep working on this. I got lost at the v.size
+
+# from this tutorial: https://ladal.edu.au/net.html 
+
+nodes <- pairs_by_role %>% 
+  count(college_mentee) %>% 
+  rename(`Mentee College` = college_mentee)
+
+net <- count (pairs_by_role, college_mentee, college_mentor, name = "Freq")
+
+nodes_df <- data.frame(nodes)
+net_df <- data.frame(net)
+
+ig <- igraph::graph_from_data_frame(d = net_df, vertices = nodes_df, directed = FALSE)
+
+tg <- tidygraph::as_tbl_graph(ig) %>% 
+  tidygraph::activate(nodes) %>% 
+  dplyr::mutate(label = name)
+
+set.seed(12345)
+
+# determine the size of the node
+v.size <- net_df$Freq
+v.size
+
+# plot it all
+tg %>% 
+  ggraph (layout = "fr") +
+  geom_edge_arc(colour = "gray50", 
+                 lineend = "round", 
+                 strength = .1,
+                 alpha = .1) +
+#  geom_node_point(size = log(v.size)*2) +
+  geom_node_text(aes(label = name), 
+                 repel = TRUE,
+                 point.padding = unit (0.2, "lines"), 
+                 colour = "gray10") +
+  theme_graph(background = "white") + 
+  guides (edge_width = FALSE, 
+          edge_alpha = FALSE)
+
+
+
+```
+
+
+
+If you have any questions, please contact Dr Jen Beaudry, Manager, Researcher Training, Development and Communication in Research Development and Support. 
