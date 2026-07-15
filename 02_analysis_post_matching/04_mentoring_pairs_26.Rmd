@@ -10,7 +10,7 @@ header-includes:
   - \usepackage{titling}
     \setlength{\droptitle}{-2cm} # removes some of the white space above title
   - \pretitle{\begin{center}
-    \includegraphics[width=1.5in, height=1.5in]{flinders-university-horizontal-master.png}\LARGE\\} # adds logo
+    \includegraphics[width=1.5in, height=0.5in]{flinders-university-horizontal-master.png}\LARGE\\} # adds logo
   - \posttitle{\end{center}}
   - \usepackage{fancyhdr}
   - \fancypagestyle{plain}{\pagestyle{fancy}} # sets the footer on page 1
@@ -353,24 +353,22 @@ df <- df %>%
 Table \ref{tab:college_breakdown} shows the number of mentees and mentors per 
 College who were selected to participate in the program. 
 
-REWRITE THIS AND ADD INFO ABOUT THE PILOT HERE.
-For the first time ever, we have had more mentors express an interest in the 
-program than mentees. This is likely the result of our concerted efforts to 
-attract more mentors to the program along with the possibility that we are 
-adequately meeting the demand from our Early Career Researcher community, 
-given the larger cohorts that we have had in the previous 3 years (30--38 pairs, 
-compared to 12--20 pairs in the past). 
+In 2026, we are trialling a tiered mentoring approach to meet the 
+considerable demand from MCRs for mentoring opportunities for themselves. 
+In this new approach, a senior researcher mentors a mid-career researcher, 
+who in turn mentors an early-career researcher. 
 
-As such, we had 31 traditional pairs in the program in 2026. We had 3 triads in 
+This year, we had 31 pairs in the traditional program alongside 3 triads in 
 the pilot program. 
 
 The percentage column represents the percentage of mentors from each 
 College and the percentage of mentees from each College who are participating
 in this year's program. As evident from this table, 
-the College of Humanities, Arts and Social Sciences had a larger percentage of mentors
-compared to the percentage of mentees in the program this year. 
-The College of Medicine and Public Health had the largest 
-percentage of mentees in the program, which was not the case for the mentors. The 
+the College of Nursing and Health Sciences had a larger percentage of mentors
+compared to the percentage of mentees. 
+As usual, the College of Medicine and Public Health had the largest 
+percentage of mentees in the program, but the numbers were smaller than the last
+few years. The 
 other Colleges had similar percentages of mentees and mentors in the program. 
 
 
@@ -401,7 +399,7 @@ col <- full_join (col_tor, col_tee, by = "college") %>%
 # need to manually update the number of mentors and mentees in the header
 
 col %>% 
-knitr::kable (booktabs = T, linesep = "",
+knitr::kable (booktabs = T, linesep = "", format = "latex",
               col.names = c("College", "Number", "Percentage", "Number", "Percentage"), 
               caption = "Breakdown of Mentors and Mentees by College",
               align = 'lcc') %>% 
@@ -479,6 +477,7 @@ knitr::kable (
 ```
 
 
+\newpage
 
 
 ```{r mentee_details_expansive, include=FALSE}
@@ -486,13 +485,8 @@ knitr::kable (
 # we used this detail for the mentee roundtable for HDR supervision. This isn't
   # part of the regular report. 
 
-# This is the text for the intro to the table.
-
-# \newpage
-# 
-# Table \ref{tab:mentor_details} shows the details of the mentors who were selected 
-# to participate in the program. 
-
+# This is the text for the intro to the tabl (see above)
+#The table below shows the details of the mentees who were selected to participate in the program.
 
 # identify the mentees in each college
 

@@ -2,7 +2,7 @@
 title: "Researcher Mentoring Program for Early-Career Researchers (2026)" 
 subtitle: "Application Details & Information for Matching"
 # author: "Jen Beaudry"
-date: "December 2025"
+date: "January 2026"
 output: pdf_document
 editor_options: 
   chunk_output_type: console
@@ -463,5 +463,7 @@ df_tor %>%
 # # use different styling to repeat the header
 
 ```
+
+\vskip 0.3in
 
 If you have any questions, please contact Dr Jen Beaudry, Manager, Researcher Training, Development and Communication in Research Development and Support. 

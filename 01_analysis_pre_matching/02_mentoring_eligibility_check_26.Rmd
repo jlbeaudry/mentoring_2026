@@ -797,16 +797,17 @@ eligibility criteria for the program. Below are the screening steps:
   *  Withdrawals: We had `r withdraw_n_tee_pre` mentee withdraw before being matched with 
   a mentor. 
   
-  *  Mentor eligibility:  We had `r level_no_n_tor` mentors who did not meet the 
+  *  Mentor eligibility:  We had `r nrow(df_tor_inel)` mentors who did not meet the 
   eligibility criteria for the program. 
   
   *  Mentee eligibility: We had
   `r sum(previous_no_n_tee, employ_no_n_tee, level_no_n_tee, contract_no_n_tee, phd_no_n_tee)` mentees 
   who did not meet the eligibility criteria for the program. Specifically, we 
   had `r employ_no_n_tee` applications from people who did not hold academic positions and
-  `r contract_no_n_tee` applications from people whose contracts will end before November 2026. If their
-  Colleges had a mentoring program, I connected them with people in the Colleges who could discuss 
-  alternate programs.
+  `r contract_no_n_tee` applications from people whose contracts will end before November 2026. 
+  For those mentees from Colleges with a College-based mentoring program, I connected 
+  the ineligible ECRs with people in their Colleges who could discuss 
+  alternate options
 
   *  Missing information: We removed no mentees or mentors for providing incomplete
   information about the areas for growth.
@@ -842,11 +843,13 @@ col <- full_join (col_tor, col_tee, by = "college") %>%
 # need to manually update the number of mentors and mentees in the header
 
 col %>% 
-knitr::kable (booktabs = T, linesep = "",
+knitr::kable (booktabs = T, 
+              linesep = "",
+              format = "latex",
               col.names = c("College", "Number", "Percentage", "Number", "Percentage"), 
               caption = "Breakdown of Eligible Mentors and Mentees by College",
               align = 'lcc') %>% 
-    add_header_above(c(" " = 1, "Mentors (n = 34)" = 2, "Mentees (n = 32)" = 2)) %>% 
+    add_header_above(c(" " = 1, "Mentors (n = 34)" = 2, "Mentees (n = 31)" = 2)) %>% 
   styler_pdf() 
 
 
@@ -855,7 +858,7 @@ knitr::kable (booktabs = T, linesep = "",
 
 \newpage
 
-```{r ineligible mentee details to double check, include = TRUE}
+```{r ineligible mentee details to double check, include = FALSE}
 
 # do not include this in the final report, but use it to double check our data
 
@@ -871,6 +874,7 @@ knitr::kable (
   df_tee_inel_details[, c(2,3,1,4)], # put the columns in the right order
   booktabs = T,
   linesep = "",
+  format = "latex",
   col.names = c("Names", "Mentee Number", "College", "Eligibility"),
   caption =
     sprintf("Breakdown of Ineligible Mentees (n = %d)",
@@ -885,7 +889,7 @@ knitr::kable (
 ```
 
 
-```{r ineligible mentor details to double check, include = TRUE}
+```{r ineligible mentor details to double check, include = FALSE}
 
 # do not include this in the final report, but use it to double check our data
 
@@ -901,6 +905,7 @@ knitr::kable (
   df_tor_inel_details[, c(2,3,1,4)], # select only the names and levels columns
   booktabs = T,
   linesep = "",
+  format = "latex",
   col.names = c("Names", "Mentee Number", "College", "Eligibility"),
   caption =
     sprintf("Breakdown of Ineligible Mentors (n = %d)",
@@ -915,7 +920,7 @@ knitr::kable (
 ```
 
 
-```{r mentor details for matching process, include = TRUE}
+```{r mentor details for matching process, include = FALSE}
 
 #this will include their mentoring id number in the table for ease. We don't want
   # to include that for the enduring report though. For the report, make this false
@@ -936,6 +941,8 @@ knitr::kable (
   col_tor_details[, c(2,3,4)],
   booktabs = T,
   linesep = "",
+  longtable = T,
+  format = "latex",
   col.names = c("Name", "Level", "Mentor Number"),
   caption =
     sprintf("Breakdown of Mentors by College (n = %d)",
@@ -949,7 +956,7 @@ knitr::kable (
 # as_image(file = here::here("images", "mentors.png"))
 ```
 
-```{r mentor details for report, include = FALSE}
+```{r mentor details for report, include = TRUE}
 
 #use this code for the report; it takes out their id number
 
@@ -964,7 +971,9 @@ col_tor_details <- df_tor %>%
 knitr::kable (
   col_tor_details[, c(2,3)],
   booktabs = T,
+  longtable = T,
   linesep = "",
+  format = "latex",
   col.names = c("Name", "Level"),
   caption =
     sprintf("Breakdown of Mentors by College (n = %d)",
@@ -976,7 +985,7 @@ knitr::kable (
 
 ```
 
-```{r mentee details for matching process, include = TRUE}
+```{r mentee details for matching process, include = FALSE}
 # same re the report, but includes mentee number
 
 # identify the mentees in each college
@@ -991,6 +1000,7 @@ knitr::kable (
   col_tee_details[, c(2,3, 4)], # select the names, levels and id columns
   booktabs = T,
   linesep = "",
+  format = "latex",
   col.names = c("Name", "Level", "Mentee Number"),
   caption =
     sprintf("Breakdown of Mentees by College (n = %d)",
@@ -1005,7 +1015,7 @@ knitr::kable (
 
 ```
 
-```{r mentee details for report, include = FALSE}
+```{r mentee details for report, include = TRUE}
 
 # identify the mentees in each college
 
@@ -1019,6 +1029,7 @@ knitr::kable (
   col_tee_details[, c(2,3)], # select only the names and levels columns
   booktabs = T,
   linesep = "",
+  format = "latex",
   col.names = c("Names", "Levels"),
   caption =
     sprintf("Breakdown of Mentees by College (n = %d)",
