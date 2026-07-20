@@ -514,6 +514,8 @@ knitr::kable (
                 latex_options = c("repeat_header", "hold_position", "striped")) 
 # use different styling to repeat the header
 
+write.csv(col_tee_details_more, here::here("00_data", "paired_data", "col_tee_details_more.csv"), row.names = FALSE)
+
 ```
 
 \newpage
